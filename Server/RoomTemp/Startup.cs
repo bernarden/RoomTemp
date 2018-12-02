@@ -45,6 +45,7 @@ namespace RoomTemp
                 app.UseHsts();
             }
 
+            UpdateDatabase(app);
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
@@ -65,6 +66,19 @@ namespace RoomTemp
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+        }
+
+        private static void UpdateDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices
+                .GetRequiredService<IServiceScopeFactory>()
+                .CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<TemperatureContext>())
+                {
+                    context.Database.Migrate();
+                }
+            }
         }
     }
 }

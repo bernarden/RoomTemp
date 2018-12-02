@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Application-specific files
+temperature.db
+
 # User-specific files
 *.rsuser
 *.suo
