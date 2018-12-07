@@ -14,7 +14,8 @@ namespace RoomTemp.Controllers
     {
         private readonly TemperatureContext _temperatureContext;
 
-        public MeController(TemperatureContext temperatureContext)
+        public MeController(IServiceProvider serviceProvider, TemperatureContext temperatureContext) 
+            : base(serviceProvider)
         {
             _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
         }
@@ -22,13 +23,16 @@ namespace RoomTemp.Controllers
         [HttpGet]
         public async Task<IActionResult> Me()
         {
-            var device = await GetAuthorizedDevice(_temperatureContext);
+            var device = await GetAuthorizedDevice();
             if (device == null)
             {
                 return Unauthorized();
             }
 
-            var sensors = await _temperatureContext.Sensor.ToListAsync();
+            var sensors = await GetCachedValue("AllSensors",
+                async () => await _temperatureContext.Sensor.ToListAsync(),
+                TimeSpan.FromHours(6));
+
             var result = new DeviceInfoWithSensorsDto
             {
                 Id = device.DeviceId,
