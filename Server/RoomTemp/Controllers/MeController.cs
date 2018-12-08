@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ namespace RoomTemp.Controllers
     {
         private readonly TemperatureContext _temperatureContext;
 
-        public MeController(IServiceProvider serviceProvider, TemperatureContext temperatureContext) 
+        public MeController(IServiceProvider serviceProvider, TemperatureContext temperatureContext)
             : base(serviceProvider)
         {
             _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
@@ -44,6 +45,34 @@ namespace RoomTemp.Controllers
                 })
             };
             return Ok(result);
+        }
+
+        [HttpPost("/AddReading")]
+        public async Task<IActionResult> AddReading([FromBody]IEnumerable<TemperatureReadingDto> temperatureReadings)
+        {
+            var device = await GetAuthorizedDevice();
+            if (device == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(temperatureReadings);
+            }
+
+            var tempReadings = temperatureReadings.Select(x => new TempReading
+            {
+                DeviceId = device.DeviceId,
+                SensorId = x.SensorId,
+                LocationId = x.LocationId,
+                Temperature = x.Temperature,
+                TakenAt = x.TakenAt
+            });
+            await _temperatureContext.TempReading.AddRangeAsync(tempReadings);
+            await _temperatureContext.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }
