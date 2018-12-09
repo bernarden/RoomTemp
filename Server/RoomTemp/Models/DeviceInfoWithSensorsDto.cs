@@ -7,5 +7,6 @@ namespace RoomTemp.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public IEnumerable<SensorDto> AvailableSensors { get; set; }
+        public IEnumerable<LocationDto> AvailableLocations { get; set; }
     }
 }

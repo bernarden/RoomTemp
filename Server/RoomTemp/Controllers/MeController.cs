@@ -34,6 +34,10 @@ namespace RoomTemp.Controllers
                 async () => await _temperatureContext.Sensor.ToListAsync(),
                 TimeSpan.FromHours(6));
 
+            var locations = await GetCachedValue("AllLocations",
+                async () => await _temperatureContext.Location.ToListAsync(),
+                TimeSpan.FromHours(6));
+
             var result = new DeviceInfoWithSensorsDto
             {
                 Id = device.DeviceId,
@@ -42,13 +46,18 @@ namespace RoomTemp.Controllers
                 {
                     SensorId = x.SensorId,
                     Name = x.Name
+                }),
+                AvailableLocations = locations.Select(x => new LocationDto()
+                {
+                    LocationId = x.LocationId,
+                    Name = x.Name
                 })
             };
             return Ok(result);
         }
 
-        [HttpPost("/AddReading")]
-        public async Task<IActionResult> AddReading([FromBody]IEnumerable<TemperatureReadingDto> temperatureReadings)
+        [HttpPost("/AddReadings")]
+        public async Task<IActionResult> AddReading([FromBody] IEnumerable<TemperatureReadingDto> temperatureReadings)
         {
             var device = await GetAuthorizedDevice();
             if (device == null)
