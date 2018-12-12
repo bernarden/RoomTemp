@@ -1,15 +1,15 @@
 ﻿using GraphQL.Types;
-using RoomTemp.Data;
+using RoomTemp.Data.Repositories;
 
 namespace RoomTemp.Models.GraphQL
 {
     public class SensorQuery : ObjectGraphType
     {
-        public SensorQuery()
+        public SensorQuery(ISensorRepository sensorRepository)
         {
             Field<SensorType>(
                 "hero",
-                resolve: context => new Sensor(){SensorId = 12, Name = "name"}
+                resolve: context => sensorRepository.Get(1)
             );
         }
     }

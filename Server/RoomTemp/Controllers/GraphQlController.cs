@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,17 @@ namespace RoomTemp.Controllers
     [ApiController]
     public class GraphQlController : ControllerBase
     {
+        private readonly SensorQuery _sensorQuery;
+
+        public GraphQlController(SensorQuery sensorQuery)
+        {
+            _sensorQuery = sensorQuery ?? throw new ArgumentNullException(nameof(sensorQuery));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GraphQlQuery query)
         {
-            var schema = new Schema { Query = new SensorQuery() };
+            var schema = new Schema { Query = _sensorQuery };
 
             var result = await new DocumentExecuter().ExecuteAsync(_ =>
             {
