@@ -30,6 +30,7 @@ namespace RoomTemp
             services.AddDbContext<TemperatureContext>(o => o.UseSqlite("Data Source=temperature.db"));
 
             services.AddTransient<SensorQuery>();
+            services.AddTransient<SensorMutation>();
             services.AddTransient<ISensorRepository, SensorRepository>();
 
             // In production, the React files will be served from this directory
