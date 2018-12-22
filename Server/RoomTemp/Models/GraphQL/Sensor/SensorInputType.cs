@@ -1,9 +1,8 @@
 ﻿using GraphQL.Types;
-using RoomTemp.Data;
 
-namespace RoomTemp.Models.GraphQL
+namespace RoomTemp.Models.GraphQL.Sensor
 {
-    public class SensorInputType : InputObjectGraphType<Sensor>
+    public class SensorInputType : InputObjectGraphType<Data.Sensor>
     {
         public SensorInputType()
         {

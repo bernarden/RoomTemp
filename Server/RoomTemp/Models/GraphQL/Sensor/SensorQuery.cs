@@ -1,7 +1,7 @@
 ﻿using GraphQL.Types;
 using RoomTemp.Data.Repositories;
 
-namespace RoomTemp.Models.GraphQL
+namespace RoomTemp.Models.GraphQL.Sensor
 {
     public class SensorQuery : ObjectGraphType
     {

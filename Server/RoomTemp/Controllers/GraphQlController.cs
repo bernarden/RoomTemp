@@ -11,29 +11,24 @@ namespace RoomTemp.Controllers
     [ApiController]
     public class GraphQlController : ControllerBase
     {
-        private readonly SensorQuery _sensorQuery;
-        private readonly SensorMutation _sensorMutation;
+        private readonly IDocumentExecuter _documentExecuter;
+        private readonly ISchema _schema;
 
-        public GraphQlController(SensorQuery sensorQuery, SensorMutation sensorMutation)
+        public GraphQlController(IDocumentExecuter documentExecuter, ISchema schema)
         {
-            _sensorQuery = sensorQuery ?? throw new ArgumentNullException(nameof(sensorQuery));
-            _sensorMutation = sensorMutation ?? throw new ArgumentNullException(nameof(sensorMutation));
+            _documentExecuter = documentExecuter ?? throw new ArgumentNullException(nameof(documentExecuter));
+            _schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GraphQlQuery query)
         {
-            var schema = new Schema { Query = _sensorQuery, Mutation = _sensorMutation};
-
-            var result = await new DocumentExecuter().ExecuteAsync(_ =>
-            {
-                _.Schema = schema;
-                _.Query = query.Query;
-            }).ConfigureAwait(false);
+            var executionOptions = new ExecutionOptions { Schema = _schema, Query = query.Query };
+            var result = await _documentExecuter.ExecuteAsync(executionOptions).ConfigureAwait(false);
 
             if (result.Errors?.Count > 0)
             {
-                return BadRequest();
+                return BadRequest(result.Errors);
             }
 
             return Ok(result);
