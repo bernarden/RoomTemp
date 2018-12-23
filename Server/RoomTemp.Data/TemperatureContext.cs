@@ -8,15 +8,12 @@ namespace RoomTemp.Data
         {
         }
 
-        public DbSet<Location> Location { get; set; }
         public DbSet<Device> Device { get; set; }
         public DbSet<Sensor> Sensor { get; set; }
         public DbSet<TempReading> TempReading { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TempReading>().HasOne(t => t.Location).WithMany(l => l.TempReadings)
-                .HasForeignKey(t => t.LocationId);
             modelBuilder.Entity<TempReading>().HasOne(t => t.Sensor).WithMany(s => s.TempReadings)
                 .HasForeignKey(t => t.SensorId);
             modelBuilder.Entity<TempReading>().HasOne(t => t.Device).WithMany(d => d.TempReadings)

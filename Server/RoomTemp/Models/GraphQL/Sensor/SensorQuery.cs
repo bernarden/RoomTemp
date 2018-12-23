@@ -5,7 +5,7 @@ namespace RoomTemp.Models.GraphQL.Sensor
 {
     public class SensorQuery : ObjectGraphType
     {
-        public SensorQuery(ISensorRepository sensorRepository)
+        public SensorQuery(SensorRepository sensorRepository)
         {
             FieldAsync<SensorType>(
                 "sensor",

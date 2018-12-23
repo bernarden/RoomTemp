@@ -5,7 +5,7 @@ namespace RoomTemp.Models.GraphQL.Sensor
 {
     public class SensorMutation : ObjectGraphType
     {
-        public SensorMutation(ISensorRepository sensorRepository)
+        public SensorMutation(SensorRepository sensorRepository)
         {
             Name = "Mutation";
 
@@ -17,7 +17,9 @@ namespace RoomTemp.Models.GraphQL.Sensor
                 resolve: async context =>
                 {
                     var sensor = context.GetArgument<Data.Sensor>("sensor");
-                    return await sensorRepository.CreateSensor(sensor);
+                    sensor = sensorRepository.Add(sensor);
+                    await sensorRepository.SaveChangesAsync();
+                    return sensor;
                 });
 
             FieldAsync<SensorType>(
@@ -30,8 +32,10 @@ namespace RoomTemp.Models.GraphQL.Sensor
                 resolve: async context =>
                 {
                     var sensor = context.GetArgument<Data.Sensor>("sensor");
-                    sensor.SensorId = context.GetArgument<int>("id");
-                    return await sensorRepository.UpdateSensor(sensor);
+                    sensor.Id = context.GetArgument<int>("id");
+                    sensor = sensorRepository.Update(sensor);
+                    await sensorRepository.SaveChangesAsync();
+                    return sensor;
                 });
         }
     }

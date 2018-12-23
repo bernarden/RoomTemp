@@ -6,7 +6,7 @@ namespace RoomTemp.Models.GraphQL.Device
 {
     public class DeviceQuery : ObjectGraphType
     {
-        public DeviceQuery(IDeviceRepository deviceRepository)
+        public DeviceQuery(DeviceRepository deviceRepository)
         {
             FieldAsync<DeviceType>(
                 "device",

@@ -9,59 +9,47 @@ using RoomTemp.Data;
 namespace RoomTemp.Data.Migrations
 {
     [DbContext(typeof(TemperatureContext))]
-    [Migration("20181202075845_InitialMigration")]
+    [Migration("20181223022603_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
+                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
 
             modelBuilder.Entity("RoomTemp.Data.Device", b =>
                 {
-                    b.Property<int>("DeviceId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<Guid>("Key");
 
                     b.Property<string>("Name");
 
-                    b.HasKey("DeviceId");
+                    b.HasKey("Id");
 
                     b.ToTable("Device");
                 });
 
-            modelBuilder.Entity("RoomTemp.Data.Location", b =>
-                {
-                    b.Property<int>("LocationId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("LocationId");
-
-                    b.ToTable("Location");
-                });
-
             modelBuilder.Entity("RoomTemp.Data.Sensor", b =>
                 {
-                    b.Property<int>("SensorId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name");
 
-                    b.HasKey("SensorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Sensor");
                 });
 
             modelBuilder.Entity("RoomTemp.Data.TempReading", b =>
                 {
-                    b.Property<int>("TempReadingId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("DeviceId");
-
-                    b.Property<int>("LocationId");
 
                     b.Property<int>("SensorId");
 
@@ -69,11 +57,9 @@ namespace RoomTemp.Data.Migrations
 
                     b.Property<decimal>("Temperature");
 
-                    b.HasKey("TempReadingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
-
-                    b.HasIndex("LocationId");
 
                     b.HasIndex("SensorId");
 
@@ -85,11 +71,6 @@ namespace RoomTemp.Data.Migrations
                     b.HasOne("RoomTemp.Data.Device", "Device")
                         .WithMany("TempReadings")
                         .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("RoomTemp.Data.Location", "Location")
-                        .WithMany("TempReadings")
-                        .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("RoomTemp.Data.Sensor", "Sensor")

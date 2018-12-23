@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoomTemp", "RoomTemp\RoomTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomTemp.Data", "RoomTemp.Data\RoomTemp.Data.csproj", "{3B721634-4AE6-4F25-AD3A-545DFCE477E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomTemp.Tests", "RoomTemp.Tests\RoomTemp.Tests.csproj", "{0AF051F8-05B8-443E-9B14-DAF9E241167B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3B721634-4AE6-4F25-AD3A-545DFCE477E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B721634-4AE6-4F25-AD3A-545DFCE477E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B721634-4AE6-4F25-AD3A-545DFCE477E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AF051F8-05B8-443E-9B14-DAF9E241167B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AF051F8-05B8-443E-9B14-DAF9E241167B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AF051F8-05B8-443E-9B14-DAF9E241167B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AF051F8-05B8-443E-9B14-DAF9E241167B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

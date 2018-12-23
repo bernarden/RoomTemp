@@ -16,12 +16,15 @@ namespace RoomTemp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public const string LocalTestsEnvironment = "LocalTests";
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            Env = env;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
+        private IHostingEnvironment Env { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -30,15 +33,25 @@ namespace RoomTemp
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddDbContext<TemperatureContext>(o => o.UseSqlite("Data Source=temperature.db"));
+            if (Env.IsEnvironment(LocalTestsEnvironment))
+            {
+                services.AddDbContext<TemperatureContext>(options =>
+                    options.UseInMemoryDatabase(databaseName: LocalTestsEnvironment));
+            }
+            else
+            {
+                services.AddDbContext<TemperatureContext>(o => o.UseSqlite("Data Source=temperature.db"));
+            }
+            
+
 
             services.AddTransient<SensorQuery>();
             services.AddTransient<SensorMutation>();
             services.AddTransient<IDocumentExecuter, DocumentExecuter>();
             services.AddTransient<ISchema>(sp => new Schema
                 { Query = sp.GetService<SensorQuery>(), Mutation = sp.GetService<SensorMutation>() });
-            services.AddTransient<ISensorRepository, SensorRepository>();
-            services.AddTransient<IDeviceRepository, DeviceRepository>();
+            services.AddTransient<SensorRepository, SensorRepository>();
+            services.AddTransient<DeviceRepository, DeviceRepository>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
@@ -77,8 +90,10 @@ namespace RoomTemp
             });
         }
 
-        private static void UpdateDatabase(IApplicationBuilder app)
+        private void UpdateDatabase(IApplicationBuilder app)
         {
+            if (Env.IsEnvironment(LocalTestsEnvironment)) return;
+            
             using (var serviceScope = app.ApplicationServices
                 .GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())

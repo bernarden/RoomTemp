@@ -6,7 +6,7 @@ namespace RoomTemp.Models.GraphQL.Device
 {
     public class DeviceMutation : ObjectGraphType
     {
-        public DeviceMutation(IDeviceRepository deviceRepository)
+        public DeviceMutation(DeviceRepository deviceRepository)
         {
             Name = "Mutation";
 
@@ -18,7 +18,9 @@ namespace RoomTemp.Models.GraphQL.Device
                 resolve: async context =>
                 {
                     var device = context.GetArgument<Data.Device>("device");
-                    return await deviceRepository.CreateDevice(device);
+                    device = deviceRepository.Add(device);
+                    await deviceRepository.SaveChangesAsync();
+                    return device;
                 });
 
             FieldAsync<DeviceType>(
@@ -31,8 +33,10 @@ namespace RoomTemp.Models.GraphQL.Device
                 resolve: async context =>
                 {
                     var device = context.GetArgument<Data.Device>("device");
-                    device.DeviceId = context.GetArgument<int>("id");
-                    return await deviceRepository.UpdateDevice(device);
+                    device.Id = context.GetArgument<int>("id");
+                    device = deviceRepository.Update(device);
+                    await deviceRepository.SaveChangesAsync();
+                    return device;
                 });
         }
     }

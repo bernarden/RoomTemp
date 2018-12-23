@@ -2,11 +2,11 @@
 
 namespace RoomTemp.Data
 {
-    public class Sensor
+    public class Sensor : IEntity<int>
     {
-        public int SensorId { get; set; }
         public string Name { get; set; }
 
         public ICollection<TempReading> TempReadings { get; set; }
+        public int Id { get; set; }
     }
 }

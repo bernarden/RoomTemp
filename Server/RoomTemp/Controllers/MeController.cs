@@ -34,22 +34,13 @@ namespace RoomTemp.Controllers
                 async () => await _temperatureContext.Sensor.ToListAsync(),
                 TimeSpan.FromHours(6));
 
-            var locations = await GetCachedValue("AllLocations",
-                async () => await _temperatureContext.Location.ToListAsync(),
-                TimeSpan.FromHours(6));
-
             var result = new DeviceInfoWithSensorsDto
             {
-                Id = device.DeviceId,
+                Id = device.Id,
                 Name = device.Name,
                 AvailableSensors = sensors.Select(x => new SensorDto
                 {
-                    SensorId = x.SensorId,
-                    Name = x.Name
-                }),
-                AvailableLocations = locations.Select(x => new LocationDto()
-                {
-                    LocationId = x.LocationId,
+                    SensorId = x.Id,
                     Name = x.Name
                 })
             };
@@ -72,9 +63,8 @@ namespace RoomTemp.Controllers
 
             var tempReadings = temperatureReadings.Select(x => new TempReading
             {
-                DeviceId = device.DeviceId,
+                DeviceId = device.Id,
                 SensorId = x.SensorId,
-                LocationId = x.LocationId,
                 Temperature = x.Temperature,
                 TakenAt = x.TakenAt
             });
