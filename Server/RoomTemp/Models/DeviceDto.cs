@@ -2,10 +2,9 @@
 
 namespace RoomTemp.Models
 {
-    public class DeviceInfoWithSensorsDto
+    public class DeviceDto
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public IEnumerable<SensorDto> AvailableSensors { get; set; }
     }
 }

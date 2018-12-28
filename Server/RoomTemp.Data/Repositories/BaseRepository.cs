@@ -15,38 +15,38 @@ namespace RoomTemp.Data.Repositories
             _db = db;
         }
 
-        public Task<List<TEntity>> GetAll()
+        public async Task<List<TEntity>> GetAll()
         {
-            return _db.Set<TEntity>().ToListAsync();
+            return await _db.Set<TEntity>().ToListAsync();
         }
 
-        public Task<List<TEntity>> GetAll(string include)
+        public async Task<List<TEntity>> GetAll(string include)
         {
-            return _db.Set<TEntity>().Include(include).ToListAsync();
+            return await _db.Set<TEntity>().Include(include).ToListAsync();
         }
 
-        public Task<List<TEntity>> GetAll(IEnumerable<string> includes)
+        public async Task<List<TEntity>> GetAll(IEnumerable<string> includes)
         {
             var query = _db.Set<TEntity>().AsQueryable();
             query = includes.Aggregate(query, (current, include) => current.Include(include));
-            return query.ToListAsync();
+            return await  query.ToListAsync();
         }
 
-        public Task<TEntity> Get(TKey id)
+        public async Task<TEntity> Get(TKey id)
         {
-            return _db.Set<TEntity>().SingleOrDefaultAsync(c => c.Id.Equals(id));
+            return await _db.Set<TEntity>().SingleOrDefaultAsync(c => c.Id.Equals(id));
         }
 
-        public Task<TEntity> Get(TKey id, string include)
+        public async Task<TEntity> Get(TKey id, string include)
         {
-            return _db.Set<TEntity>().Include(include).SingleOrDefaultAsync(c => c.Id.Equals(id));
+            return await _db.Set<TEntity>().Include(include).SingleOrDefaultAsync(c => c.Id.Equals(id));
         }
 
-        public Task<TEntity> Get(TKey id, IEnumerable<string> includes)
+        public async Task<TEntity> Get(TKey id, IEnumerable<string> includes)
         {
             var query = _db.Set<TEntity>().AsQueryable();
             query = includes.Aggregate(query, (current, include) => current.Include(include));
-            return query.SingleOrDefaultAsync(c => c.Id.Equals(id));
+            return await query.SingleOrDefaultAsync(c => c.Id.Equals(id));
         }
 
         public virtual TEntity Add(TEntity entity)

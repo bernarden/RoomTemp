@@ -10,6 +10,8 @@ namespace RoomTemp.Data
 
         public DbSet<Device> Device { get; set; }
         public DbSet<Sensor> Sensor { get; set; }
+        public DbSet<Location> Location { get; set; }
+
         public DbSet<TempReading> TempReading { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

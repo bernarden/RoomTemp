@@ -4,6 +4,8 @@ namespace RoomTemp.Data
 {
     public class TempReading : IEntity<int>
     {
+        public int Id { get; set; }
+
         public decimal Temperature { get; set; }
         public DateTime TakenAt { get; set; }
 
@@ -12,6 +14,8 @@ namespace RoomTemp.Data
 
         public int DeviceId { get; set; }
         public Device Device { get; set; }
-        public int Id { get; set; }
+
+        public int LocationId { get; set; }
+        public Location Location { get; set; }
     }
 }

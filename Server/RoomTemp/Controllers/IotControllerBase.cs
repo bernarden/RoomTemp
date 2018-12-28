@@ -55,6 +55,11 @@ namespace RoomTemp.Controllers
             return valueToCache;
         }
 
+        protected void ResetCache(string key)
+        {
+            _cache.Remove(key);
+        }
+
         private Guid? ExtractApiKey()
         {
             const string iotApiKeyParameterName = "IoTApiKey";

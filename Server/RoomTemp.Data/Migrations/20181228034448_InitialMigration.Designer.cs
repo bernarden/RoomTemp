@@ -9,7 +9,7 @@ using RoomTemp.Data;
 namespace RoomTemp.Data.Migrations
 {
     [DbContext(typeof(TemperatureContext))]
-    [Migration("20181223022603_InitialMigration")]
+    [Migration("20181228034448_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,18 @@ namespace RoomTemp.Data.Migrations
                     b.ToTable("Device");
                 });
 
+            modelBuilder.Entity("RoomTemp.Data.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Location");
+                });
+
             modelBuilder.Entity("RoomTemp.Data.Sensor", b =>
                 {
                     b.Property<int>("Id")
@@ -51,6 +63,8 @@ namespace RoomTemp.Data.Migrations
 
                     b.Property<int>("DeviceId");
 
+                    b.Property<int>("LocationId");
+
                     b.Property<int>("SensorId");
 
                     b.Property<DateTime>("TakenAt");
@@ -60,6 +74,8 @@ namespace RoomTemp.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
+
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("SensorId");
 
@@ -71,6 +87,11 @@ namespace RoomTemp.Data.Migrations
                     b.HasOne("RoomTemp.Data.Device", "Device")
                         .WithMany("TempReadings")
                         .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("RoomTemp.Data.Location", "Location")
+                        .WithMany("TempReadings")
+                        .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("RoomTemp.Data.Sensor", "Sensor")

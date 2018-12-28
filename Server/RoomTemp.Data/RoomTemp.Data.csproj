@@ -8,4 +8,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="GraphQL-Parser">
+      <HintPath>..\..\..\..\Users\Bernarden\.nuget\packages\graphql-parser\3.0.0\lib\netstandard1.1\GraphQL-Parser.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
