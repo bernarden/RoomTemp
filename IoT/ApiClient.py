@@ -38,7 +38,7 @@ class ApiClient(object):
     def post_temperature_reading(self, temp_reading: TemperatureReading):
         url = self.url + '/api/iot/readings'
         body = [{"Temperature": temp_reading.temperature,
-                 "TakenAt": temp_reading.datetime.isoformat() + 'Z',
+                 "TakenAt": temp_reading.taken_at.isoformat() + 'Z',
                  "LocationId": temp_reading.location_id,
                  "SensorId": temp_reading.sensor_id}]
         headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}

@@ -2,13 +2,18 @@
 
 import getopt
 import sys
-import datetime
-from time import sleep
+from datetime import datetime, timedelta
+from twisted.internet import task, reactor
 
 from ApiClient import ApiClient
 from depenencies.TSYS01 import TSYS01
 from TemperatureReading import TemperatureReading
 from Repository import Repository
+
+
+TAKE_READING_EVERY_NUMBER_OF_SECONDS = 15
+CLEAN_UP_DB_EVERY_NUMBER_OF_HOURS = 24
+CLEAN_UP_SYNCED_RECORDS_OLDER_THAN_NUMBER_OF_DAYS = 10
 
 
 def main(argv):
@@ -18,28 +23,40 @@ def main(argv):
 
     sensor = TSYS01.TSYS01(0x76)
 
-    client = ApiClient(url, key)
-    location_id = client.get_location_id(location_name)
-    sensor_id = client.get_sensor_id(sensor_name)
+    api_client = ApiClient(url, key)
+    location_id = api_client.get_location_id(location_name)
+    sensor_id = api_client.get_sensor_id(sensor_name)
 
-    while True:
-        # noinspection PyBroadException
-        try:
-            temperature = sensor.read_temperature()
-            temp_reading = TemperatureReading(temperature, datetime.datetime.utcnow(), location_id, sensor_id)
-            print(temp_reading)
+    clean_up_db_looping_call = task.LoopingCall(clean_up_db, repository)
+    clean_up_db_looping_call.start(CLEAN_UP_DB_EVERY_NUMBER_OF_HOURS * 3600)
 
-            reading_id = repository.insert_reading(temp_reading)
-            result_code = client.post_temperature_reading(temp_reading)
-            if result_code in (200, 201):
-                repository.mark_reading_synced(reading_id)
+    take_reading_looping_call = task.LoopingCall(take_reading, sensor, repository, api_client, location_id, sensor_id)
+    take_reading_looping_call.start(TAKE_READING_EVERY_NUMBER_OF_SECONDS)
 
-        except Exception as e:
-            print(e)
-            pass
-        finally:
-            print("Sleeping for 15 seconds.")
-            sleep(15)
+    reactor.run()
+
+
+def take_reading(sensor, repository, api_client, location_id, sensor_id):
+    try:
+        temperature = sensor.read_temperature()
+        temp_reading = TemperatureReading(temperature, datetime.utcnow(), location_id, sensor_id)
+        print("New Reading:", temp_reading)
+        reading_id = repository.insert_reading(temp_reading)
+        result_code = api_client.post_temperature_reading(temp_reading)
+        if result_code in (200, 201):
+            repository.mark_reading_synced(reading_id)
+    except Exception as e:
+        print(e)
+
+
+def clean_up_db(repository):
+    try:
+        older_than = datetime.utcnow() - timedelta(days=CLEAN_UP_SYNCED_RECORDS_OLDER_THAN_NUMBER_OF_DAYS)
+        print(f"DB clean-up: Removing records older than {older_than}")
+        records_deleted = repository.clean_up_old_synced_records(older_than)
+        print(f"DB clean-up: Removed {records_deleted} records ")
+    except Exception as e:
+        print("DB clean-up:", e)
 
 
 def process_inputs(argv):

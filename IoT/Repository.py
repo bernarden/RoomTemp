@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 import TemperatureReading
 
@@ -25,7 +26,7 @@ class Repository(object):
         cursor = self.connection.cursor()
         sql_command = '''INSERT INTO TempReading (Temperature, TakenAt, LocationId, SensorId, IsSynced) 
                       VALUES (?,?,?,?,0)'''
-        sql_parameters = (temp_reading.temperature, temp_reading.datetime.isoformat() + 'Z',
+        sql_parameters = (temp_reading.temperature, temp_reading.taken_at.isoformat() + 'Z',
                           temp_reading.location_id, temp_reading.sensor_id)
         cursor.execute(sql_command, sql_parameters)
         self.connection.commit()
@@ -37,3 +38,11 @@ class Repository(object):
         sql_parameters = (temp_reading_id,)
         cursor.execute(sql_command, sql_parameters)
         self.connection.commit()
+
+    def clean_up_old_synced_records(self, older_than: datetime):
+        cursor = self.connection.cursor()
+        sql_command = '''DELETE FROM TempReading WHERE IsSynced = 1 AND TakenAt < ?'''
+        sql_parameters = (older_than.isoformat() + 'Z',)
+        cursor.execute(sql_command, sql_parameters)
+        self.connection.commit()
+        return cursor.rowcount
