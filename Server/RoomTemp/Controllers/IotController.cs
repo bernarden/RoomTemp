@@ -190,8 +190,6 @@ namespace RoomTemp.Controllers
                 return null;
             }
 
-            var alist = await _temperatureContext.Device.ToListAsync();
-
             var device = await GetCachedValue($"DeviceByApiKey.{apiKey.Value}",
                 async () => await _temperatureContext.Device.Where(x => x.Key == apiKey).FirstOrDefaultAsync(),
                 TimeSpan.FromHours(6));
