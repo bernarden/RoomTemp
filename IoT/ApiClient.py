@@ -3,10 +3,10 @@ import requests
 
 class ApiClient(object):
 
-    def __init__(self, url: str, key: str):
-        self.url: str = url.strip('\\').strip('/')
-        self.key: str = key
-        self.apiKeyHeaderName: str = 'IoTApiKey'
+    def __init__(self, url, key):
+        self.url = url.strip('\\').strip('/')
+        self.key = key
+        self.apiKeyHeaderName = 'IoTApiKey'
 
     def get_location_id(self, location):
         url = self.url + '/api/iot/locations'
