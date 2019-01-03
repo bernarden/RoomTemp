@@ -4,24 +4,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using RoomTemp.Data;
 using RoomTemp.Models;
 
 namespace RoomTemp.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class IotController : IotControllerBase
+    public class IotController : ControllerBase
     {
         private readonly TemperatureContext _temperatureContext;
+        private readonly IMemoryCache _cache;
 
-        public IotController(IServiceProvider serviceProvider, TemperatureContext temperatureContext)
-            : base(serviceProvider)
+        public IotController(IMemoryCache cache, TemperatureContext temperatureContext)
         {
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
         }
 
-        [HttpGet("/me")]
+        [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
             var device = await GetAuthorizedDevice();
@@ -38,7 +40,7 @@ namespace RoomTemp.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/sensors")]
+        [HttpGet("sensors")]
         public async Task<IActionResult> GetSensors()
         {
             var device = await GetAuthorizedDevice();
@@ -59,13 +61,18 @@ namespace RoomTemp.Controllers
             return Ok(result);
         }
 
-        [HttpPost("/sensors")]
-        public async Task<IActionResult> PostSensor(string sensorName)
+        [HttpPost("sensors")]
+        public async Task<IActionResult> PostSensor([FromBody]string sensorName)
         {
             var device = await GetAuthorizedDevice();
             if (device == null)
             {
                 return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
             var existingSensor = await _temperatureContext.Sensor
@@ -83,10 +90,14 @@ namespace RoomTemp.Controllers
                 });
             }
 
-            return Ok(existingSensor);
+            return Ok(new SensorDto
+            {
+                Id = existingSensor.Id,
+                Name = existingSensor.Name
+            });
         }
 
-        [HttpGet("/locations")]
+        [HttpGet("locations")]
         public async Task<IActionResult> GetLocations()
         {
             var device = await GetAuthorizedDevice();
@@ -107,13 +118,18 @@ namespace RoomTemp.Controllers
             return Ok(result);
         }
 
-        [HttpPost("/locations")]
-        public async Task<IActionResult> PostLocation(string locationName)
+        [HttpPost("locations")]
+        public async Task<IActionResult> PostLocation([FromBody]string locationName)
         {
             var device = await GetAuthorizedDevice();
             if (device == null)
             {
                 return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
             var existingLocation = await _temperatureContext.Location
@@ -131,10 +147,14 @@ namespace RoomTemp.Controllers
                 });
             }
 
-            return Ok(existingLocation);
+            return Ok(new LocationDto
+            {
+                Id = existingLocation.Id,
+                Name = existingLocation.Name
+            });
         }
 
-        [HttpPost("/readings")]
+        [HttpPost("readings")]
         public async Task<IActionResult> AddReading([FromBody] IEnumerable<TemperatureReadingDto> temperatureReadings)
         {
             var device = await GetAuthorizedDevice();
@@ -145,7 +165,7 @@ namespace RoomTemp.Controllers
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(temperatureReadings);
+                return BadRequest(ModelState);
             }
 
             var tempReadings = temperatureReadings.Select(x => new TempReading
@@ -160,6 +180,66 @@ namespace RoomTemp.Controllers
             await _temperatureContext.SaveChangesAsync();
 
             return Ok();
+        }
+
+        private async Task<Device> GetAuthorizedDevice()
+        {
+            Guid? apiKey = ExtractApiKey();
+            if (apiKey == null)
+            {
+                return null;
+            }
+
+            var alist = await _temperatureContext.Device.ToListAsync();
+
+            var device = await GetCachedValue($"DeviceByApiKey.{apiKey.Value}",
+                async () => await _temperatureContext.Device.Where(x => x.Key == apiKey).FirstOrDefaultAsync(),
+                TimeSpan.FromHours(6));
+
+            return device;
+        }
+
+        private async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, TimeSpan expireIn,
+            Func<T, bool> shouldCacheResult = null)
+        {
+            if (_cache.TryGetValue(key, out T cacheEntry))
+                return cacheEntry;
+
+            var valueToCache = await func();
+            if (shouldCacheResult?.Invoke(valueToCache) ?? true)
+            {
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expireIn);
+                _cache.Set(key, valueToCache, cacheEntryOptions);
+            }
+
+            return valueToCache;
+        }
+
+        private void ResetCache(string key)
+        {
+            _cache.Remove(key);
+        }
+
+        private Guid? ExtractApiKey()
+        {
+            const string iotApiKeyParameterName = "IoTApiKey";
+            if (!Request.Headers.ContainsKey(iotApiKeyParameterName))
+            {
+                return null;
+            }
+
+            StringValues values = HttpContext.Request.Headers[iotApiKeyParameterName];
+            if (values.Count != 1)
+            {
+                return null;
+            }
+
+            if (Guid.TryParse(values.First(), out var result))
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

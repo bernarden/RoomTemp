@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using GraphQL;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
@@ -101,6 +103,10 @@ namespace RoomTemp
                 using (var context = serviceScope.ServiceProvider.GetService<TemperatureContext>())
                 {
                     context.Database.Migrate();
+
+                    if (context.Device.Any()) return;
+                    context.Device.Add(new Device { Name = "Raspberry Pi 3", Key = Guid.NewGuid()});
+                    context.SaveChanges();
                 }
             }
         }
