@@ -1,3 +1,4 @@
+import TemperatureReading
 import requests
 
 import Exceptions
@@ -34,9 +35,12 @@ class ApiClient(object):
 
         raise Exceptions.NetworkException("Returned status code: {}. Validate specified url and api_key parameters.")
 
-    def post_temperature_reading(self, temperature, date, location_id, sensor_id):
+    def post_temperature_reading(self, temp_reading: TemperatureReading):
         url = self.url + '/api/iot/readings'
-        body = [{"Temperature": temperature, "TakenAt": date, "LocationId": location_id, "SensorId": sensor_id}]
+        body = [{"Temperature": temp_reading.temperature,
+                 "TakenAt": temp_reading.datetime.isoformat() + 'Z',
+                 "LocationId": temp_reading.location_id,
+                 "SensorId": temp_reading.sensor_id}]
         headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json=body)
         return response.status_code

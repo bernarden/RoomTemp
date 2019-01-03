@@ -7,10 +7,14 @@ from time import sleep
 
 from ApiClient import ApiClient
 from depenencies.TSYS01 import TSYS01
+from TemperatureReading import TemperatureReading
+from Repository import Repository
 
 
 def main(argv):
     url, key, location_name, sensor_name = process_inputs(argv)
+    repository = Repository()
+    repository.setup_sqlite_database()
 
     sensor = TSYS01.TSYS01(0x76)
 
@@ -21,15 +25,21 @@ def main(argv):
     while True:
         # noinspection PyBroadException
         try:
-            date = datetime.datetime.utcnow().isoformat() + 'Z'
             temperature = sensor.read_temperature()
-            print("Temperature: '{}'. Date: '{}'. Location_Id: '{}'. Sensor_Id: '{}'."
-                  .format(temperature, date, location_id, sensor_id))
-            client.post_temperature_reading(temperature, date, location_id, sensor_id)
+            temp_reading = TemperatureReading(temperature, datetime.datetime.utcnow(), location_id, sensor_id)
+            print(temp_reading)
+
+            reading_id = repository.insert_reading(temp_reading)
+            result_code = client.post_temperature_reading(temp_reading)
+            if result_code in (200, 201):
+                repository.mark_reading_synced(reading_id)
+
+        except Exception as e:
+            print(e)
+            pass
+        finally:
             print("Sleeping for 15 seconds.")
             sleep(15)
-        except Exception:
-            pass
 
 
 def process_inputs(argv):
