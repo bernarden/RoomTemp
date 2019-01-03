@@ -1,5 +1,7 @@
 import requests
 
+import Exceptions
+
 
 class ApiClient(object):
 
@@ -12,13 +14,25 @@ class ApiClient(object):
         url = self.url + '/api/iot/locations'
         headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json="\"" + location + "\"")
-        return response.json()['id']
+        if response.status_code in (200, 201):
+            return response.json()['id']
+
+        if response.status_code in (401, 403):
+            raise Exceptions.ApiKeyException("Invalid API key is specified.")
+
+        raise Exceptions.NetworkException("Returned status code: {}. Validate specified url and api_key parameters.")
 
     def get_sensor_id(self, sensor):
         url = self.url + '/api/iot/sensors'
         headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json="\"" + sensor + "\"")
-        return response.json()['id']
+        if response.status_code in (200, 201):
+            return response.json()['id']
+
+        if response.status_code in (401, 403):
+            raise Exceptions.ApiKeyException("Invalid API key is specified.")
+
+        raise Exceptions.NetworkException("Returned status code: {}. Validate specified url and api_key parameters.")
 
     def post_temperature_reading(self, temperature, date, location_id, sensor_id):
         url = self.url + '/api/iot/readings'
