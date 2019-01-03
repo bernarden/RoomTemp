@@ -19,12 +19,17 @@ def main(argv):
     sensor_id = client.get_sensor_id(sensor_name)
 
     while True:
-        date = datetime.datetime.utcnow().isoformat() + 'Z'
-        temperature = sensor.read_temperature()
-        print("Temperature: '{}'. Date: '{}'. Location_Id: '{}'. Sensor_Id: '{}'.".format(temperature, date, location_id, sensor_id))
-        client.post_temperature_reading(temperature, date, location_id, sensor_id)
-        print("Sleeping for 30 seconds.")
-        sleep(30)
+        # noinspection PyBroadException
+        try:
+            date = datetime.datetime.utcnow().isoformat() + 'Z'
+            temperature = sensor.read_temperature()
+            print("Temperature: '{}'. Date: '{}'. Location_Id: '{}'. Sensor_Id: '{}'."
+                  .format(temperature, date, location_id, sensor_id))
+            client.post_temperature_reading(temperature, date, location_id, sensor_id)
+            print("Sleeping for 15 seconds.")
+            sleep(15)
+        except Exception:
+            pass
 
 
 def process_inputs(argv):
