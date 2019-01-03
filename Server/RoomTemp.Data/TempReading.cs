@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RoomTemp.Data
 {
     public class TempReading : IEntity<int>
     {
+        [Key]
         public int Id { get; set; }
 
         public decimal Temperature { get; set; }

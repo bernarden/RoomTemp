@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RoomTemp.Data;
 using RoomTemp.Data.Repositories;
-using RoomTemp.Models.GraphQL;
 using RoomTemp.Models.GraphQL.Sensor;
 
 namespace RoomTemp
@@ -19,6 +18,7 @@ namespace RoomTemp
     public class Startup
     {
         public const string LocalTestsEnvironment = "LocalTests";
+
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
@@ -35,18 +35,8 @@ namespace RoomTemp
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            if (Env.IsEnvironment(LocalTestsEnvironment))
-            {
-                services.AddDbContext<TemperatureContext>(options =>
-                    options.UseInMemoryDatabase(databaseName: LocalTestsEnvironment));
-            }
-            else
-            {
-                services.AddDbContext<TemperatureContext>(o => o.UseSqlite("Data Source=temperature.db"));
-            }
+            ConfigureDbContext(services);
             
-
-
             services.AddTransient<SensorQuery>();
             services.AddTransient<SensorMutation>();
             services.AddTransient<IDocumentExecuter, DocumentExecuter>();
@@ -57,6 +47,35 @@ namespace RoomTemp
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+        }
+
+        private void ConfigureDbContext(IServiceCollection services)
+        {
+            if (Env.IsEnvironment(LocalTestsEnvironment))
+            {
+                services.AddDbContext<TemperatureContext>(options =>
+                    options.UseInMemoryDatabase(databaseName: LocalTestsEnvironment));
+                return;
+            }
+
+            var connectionStrings = Configuration.GetSection("ConnectionStrings");
+            var sqliteSettings = connectionStrings.GetSection("Sqlite");
+            if (sqliteSettings.GetValue<bool>("isActive"))
+            {
+                services.AddDbContext<TemperatureContext>(o =>
+                    o.UseSqlite(sqliteSettings.GetValue<string>("value")));
+                return;
+            }
+
+            var sqlServerSettings = connectionStrings.GetSection("SqlServer");
+            if (sqlServerSettings.GetValue<bool>("isActive"))
+            {
+                services.AddDbContext<TemperatureContext>(o =>
+                    o.UseSqlServer(sqlServerSettings.GetValue<string>("value")));
+                return;
+            }
+
+            throw new Exception("Could not configure Db Context injection.");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -95,20 +114,28 @@ namespace RoomTemp
         private void UpdateDatabase(IApplicationBuilder app)
         {
             if (Env.IsEnvironment(LocalTestsEnvironment)) return;
-            
-            using (var serviceScope = app.ApplicationServices
-                .GetRequiredService<IServiceScopeFactory>()
-                .CreateScope())
+            try
             {
-                using (var context = serviceScope.ServiceProvider.GetService<TemperatureContext>())
+                using (var serviceScope = app.ApplicationServices
+                    .GetRequiredService<IServiceScopeFactory>()
+                    .CreateScope())
                 {
-                    context.Database.Migrate();
+                    using (var context = serviceScope.ServiceProvider.GetService<TemperatureContext>())
+                    {
+                        context.Database.Migrate();
 
-                    if (context.Device.Any()) return;
-                    context.Device.Add(new Device { Name = "Raspberry Pi 3", Key = Guid.NewGuid()});
-                    context.SaveChanges();
+                        if (context.Device.Any()) return;
+                        context.Device.Add(new Device { Name = "Raspberry Pi 3", Key = Guid.NewGuid() });
+                        context.SaveChanges();
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+           
         }
     }
 }
