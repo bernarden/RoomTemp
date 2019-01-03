@@ -1,7 +1,8 @@
 import sqlite3
 from datetime import datetime
+from typing import Sequence
 
-import TemperatureReading
+from TemperatureReading import TemperatureReading, DbTemperatureReading
 
 
 class Repository(object):
@@ -39,6 +40,14 @@ class Repository(object):
         cursor.execute(sql_command, sql_parameters)
         self.connection.commit()
 
+    def mark_readings_synced(self, temp_reading_ids: Sequence[int]):
+        cursor = self.connection.cursor()
+        sql_command = f'''UPDATE TempReading SET IsSynced = 1 WHERE Id in ({','.join(
+            ['?'] * len(temp_reading_ids))})'''
+        sql_parameters = temp_reading_ids
+        cursor.execute(sql_command, sql_parameters)
+        self.connection.commit()
+
     def clean_up_old_synced_records(self, older_than: datetime):
         cursor = self.connection.cursor()
         sql_command = '''DELETE FROM TempReading WHERE IsSynced = 1 AND TakenAt < ?'''
@@ -46,3 +55,23 @@ class Repository(object):
         cursor.execute(sql_command, sql_parameters)
         self.connection.commit()
         return cursor.rowcount
+
+    def get_unsynced_readings(self, max_number_of_records: int = 20,
+                              older_than: datetime = datetime.utcnow()) -> Sequence[DbTemperatureReading]:
+        cursor = self.connection.cursor()
+        sql_command = '''SELECT 
+            "Id",
+            "Temperature", 
+            "TakenAt", 
+            "SensorId", 
+            "LocationId",
+            "IsSynced"
+            FROM TempReading 
+            WHERE IsSynced = 0 AND TakenAt < ?
+            ORDER BY TakenAt ASC 
+            LIMIT ?'''
+        sql_parameters = (older_than.isoformat() + 'Z', max_number_of_records)
+        result = []
+        for row in cursor.execute(sql_command, sql_parameters):
+            result.append(DbTemperatureReading(row[0], row[1], row[2], row[3], row[4], row[5]))
+        return result

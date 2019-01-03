@@ -1,7 +1,8 @@
-import TemperatureReading
 import requests
+from typing import Sequence
 
 import Exceptions
+from TemperatureReading import TemperatureReading, DbTemperatureReading
 
 
 class ApiClient(object):
@@ -41,6 +42,18 @@ class ApiClient(object):
                  "TakenAt": temp_reading.taken_at.isoformat() + 'Z',
                  "LocationId": temp_reading.location_id,
                  "SensorId": temp_reading.sensor_id}]
+        headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}
+        response = requests.post(url, headers=headers, json=body)
+        return response.status_code
+
+    def post_db_temperature_readings(self, db_temp_readings: Sequence[DbTemperatureReading]):
+        url = self.url + '/api/iot/readings'
+        body = []
+        for db_temp_reading in db_temp_readings:
+            body.append({"Temperature": db_temp_reading.temperature,
+                         "TakenAt": db_temp_reading.taken_at.isoformat() + 'Z',
+                         "LocationId": db_temp_reading.location_id,
+                         "SensorId": db_temp_reading.sensor_id})
         headers = {self.apiKeyHeaderName: self.key, "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json=body)
         return response.status_code
