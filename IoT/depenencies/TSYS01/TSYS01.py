@@ -15,9 +15,13 @@ try:
     import smbus
     SIMULATION = False
 except ImportError:
-    import random
-    from depenencies.rpi_hardware import smbus
-    SIMULATION = True
+    try:
+        import smbus2 as smbus
+        SIMULATION = False
+    except ImportError:
+        import random
+        from depenencies.rpi_hardware import smbus
+        SIMULATION = True
 
 
 # i2c commands
