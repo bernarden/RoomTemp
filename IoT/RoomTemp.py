@@ -36,7 +36,7 @@ def main(argv):
     clean_up_db_looping_call.start(CLEAN_UP_DB_EVERY_NUMBER_OF_HOURS * 3600)
 
     sync_missed_records_looping_call = task.LoopingCall(sync_missed_records, api_client, repository)
-    sync_missed_records_looping_call.start(SYNC_MISSED_RECORDS_EVERY_NUMBER_OF_MINUTES)
+    sync_missed_records_looping_call.start(SYNC_MISSED_RECORDS_EVERY_NUMBER_OF_MINUTES * 60)
 
     take_reading_looping_call = task.LoopingCall(take_reading, sensor, repository, api_client, location_id, sensor_id)
     take_reading_looping_call.start(TAKE_READING_EVERY_NUMBER_OF_SECONDS)
