@@ -26,7 +26,7 @@
     <ProjectReference Include="..\RoomTemp.Data\RoomTemp.Data.csproj" />
   </ItemGroup>
 
-  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_mox  dules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
