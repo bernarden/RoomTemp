@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RoomTemp.Data;
 using RoomTemp.Data.Repositories;
+using RoomTemp.Domain;
 using RoomTemp.Models.GraphQL.Sensor;
 
 namespace RoomTemp
@@ -43,6 +44,7 @@ namespace RoomTemp
             services.AddTransient<ISchema>(sp => new Schema
                 { Query = sp.GetService<SensorQuery>(), Mutation = sp.GetService<SensorMutation>() });
             services.AddTransient<SensorRepository, SensorRepository>();
+            services.AddTransient<ICachingService, CachingService>();
             services.AddTransient<DeviceRepository, DeviceRepository>();
 
             // In production, the React files will be served from this directory

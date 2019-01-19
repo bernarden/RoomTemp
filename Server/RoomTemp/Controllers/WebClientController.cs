@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using RoomTemp.Data;
+using RoomTemp.Domain;
 using RoomTemp.Models;
 
 namespace RoomTemp.Controllers
@@ -13,12 +13,12 @@ namespace RoomTemp.Controllers
     [ApiController]
     public class WebClientController : ControllerBase
     {
-        private readonly IMemoryCache _cache;
+        private readonly ICachingService _cachingService;
         private readonly TemperatureContext _temperatureContext;
 
-        public WebClientController(IMemoryCache cache, TemperatureContext temperatureContext)
+        public WebClientController(ICachingService cachingService, TemperatureContext temperatureContext)
         {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _cachingService = cachingService ?? throw new ArgumentNullException(nameof(cachingService));
             _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
         }
 
@@ -36,7 +36,7 @@ namespace RoomTemp.Controllers
             // TODO: DB/Server grouping of the data to reduce the amount returned back.
             
             // TODO: Update caching key to include start and range.
-            var result = await GetCachedValue($"GetTempReadings.{deviceId}.{locationId}.{sensorId}]",
+            var result = await _cachingService.GetCachedValue($"GetTempReadings.{deviceId}.{locationId}.{sensorId}]",
                 async () =>
                 {
                     // TODO: Calculate the search range correctly.
@@ -52,22 +52,6 @@ namespace RoomTemp.Controllers
                 },
                 TimeSpan.FromHours(6));
             return Ok(result);
-        }
-
-        private async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, TimeSpan expireIn,
-            Func<T, bool> shouldCacheResult = null)
-        {
-            if (_cache.TryGetValue(key, out T cacheEntry))
-                return cacheEntry;
-
-            var valueToCache = await func();
-            if (shouldCacheResult?.Invoke(valueToCache) ?? true)
-            {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expireIn);
-                _cache.Set(key, valueToCache, cacheEntryOptions);
-            }
-
-            return valueToCache;
         }
     }
 }

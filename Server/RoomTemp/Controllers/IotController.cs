@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 using RoomTemp.Data;
+using RoomTemp.Domain;
 using RoomTemp.Models;
 
 namespace RoomTemp.Controllers
@@ -14,12 +14,12 @@ namespace RoomTemp.Controllers
     [Route("api/[controller]")]
     public class IotController : ControllerBase
     {
+        private readonly ICachingService _cachingService;
         private readonly TemperatureContext _temperatureContext;
-        private readonly IMemoryCache _cache;
 
-        public IotController(IMemoryCache cache, TemperatureContext temperatureContext)
+        public IotController(ICachingService cachingService, TemperatureContext temperatureContext)
         {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _cachingService = cachingService ?? throw new ArgumentNullException(nameof(cachingService));
             _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
         }
 
@@ -49,7 +49,7 @@ namespace RoomTemp.Controllers
                 return Unauthorized();
             }
 
-            var sensors = await GetCachedValue("AllSensors",
+            var sensors = await _cachingService.GetCachedValue("AllSensors",
                 async () => await _temperatureContext.Sensor.ToListAsync(),
                 TimeSpan.FromHours(6));
 
@@ -82,7 +82,7 @@ namespace RoomTemp.Controllers
                 var newSensor = new Sensor { Name = sensorName };
                 var entityEntry = await _temperatureContext.Sensor.AddAsync(newSensor);
                 await _temperatureContext.SaveChangesAsync();
-                ResetCache("AllSensors");
+                _cachingService.ResetCache("AllSensors");
                 return Ok(new SensorDto
                 {
                     Id = entityEntry.Entity.Id,
@@ -106,7 +106,7 @@ namespace RoomTemp.Controllers
                 return Unauthorized();
             }
 
-            var locations = await GetCachedValue("AllLocations",
+            var locations = await _cachingService.GetCachedValue("AllLocations",
                 async () => await _temperatureContext.Location.ToListAsync(),
                 TimeSpan.FromHours(6));
 
@@ -139,7 +139,7 @@ namespace RoomTemp.Controllers
                 var newLocation = new Location { Name = locationName };
                 var entityEntry = await _temperatureContext.Location.AddAsync(newLocation);
                 await _temperatureContext.SaveChangesAsync();
-                ResetCache("AllLocations");
+                _cachingService.ResetCache("AllLocations");
                 return Ok(new LocationDto
                 {
                     Id = entityEntry.Entity.Id,
@@ -190,32 +190,11 @@ namespace RoomTemp.Controllers
                 return null;
             }
 
-            var device = await GetCachedValue($"DeviceByApiKey.{apiKey.Value}",
+            var device = await _cachingService.GetCachedValue($"DeviceByApiKey.{apiKey.Value}",
                 async () => await _temperatureContext.Device.Where(x => x.Key == apiKey).FirstOrDefaultAsync(),
                 TimeSpan.FromHours(6));
 
             return device;
-        }
-
-        private async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, TimeSpan expireIn,
-            Func<T, bool> shouldCacheResult = null)
-        {
-            if (_cache.TryGetValue(key, out T cacheEntry))
-                return cacheEntry;
-
-            var valueToCache = await func();
-            if (shouldCacheResult?.Invoke(valueToCache) ?? true)
-            {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expireIn);
-                _cache.Set(key, valueToCache, cacheEntryOptions);
-            }
-
-            return valueToCache;
-        }
-
-        private void ResetCache(string key)
-        {
-            _cache.Remove(key);
         }
 
         private Guid? ExtractApiKey()
