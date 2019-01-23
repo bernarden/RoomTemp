@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/chart.js": "^2.7.42",
+    "axios": "^0.18.0",
+    "canvasjs": "^1.8.1",
+    "chart.js": "^2.7.3",
+    "chartjs": "^0.3.24",
+    "moment": "^2.24.0",
     "react": "^16.7.0",
+    "react-chartjs-2": "^2.7.4",
     "react-dom": "^16.7.0",
     "react-scripts-ts": "^4.0.8"
   },
@@ -14,6 +21,7 @@
     "eject": "react-scripts-ts eject"
   },
   "devDependencies": {
+    "@types/canvasjs": "^1.9.4",
     "@types/jest": "^23.3.12",
     "@types/node": "^10.12.18",
     "@types/react": "^16.7.18",
