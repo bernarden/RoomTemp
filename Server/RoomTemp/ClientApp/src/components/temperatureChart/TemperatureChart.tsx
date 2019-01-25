@@ -7,7 +7,7 @@ import { getTemperature } from 'src/api/temperatureApi';
 import * as moment from 'moment';
 class TemperatureChart extends React.Component {
   public chart: Chart;
-  public readingInterval: number = 100;
+  public readingInterval: number = 200;
 
   constructor(props: any) {
     super(props);
