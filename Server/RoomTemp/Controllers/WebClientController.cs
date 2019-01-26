@@ -39,19 +39,47 @@ namespace RoomTemp.Controllers
                 $"GetTempReadings.{searchStartDateTime:s}.{range:D}.{deviceId}.{locationId}.{sensorId}]",
                 async () =>
                 {
-                    // TODO: DB/Server grouping of the data to reduce the amount returned back.
-                    return await _temperatureContext.TempReading
+                    IQueryable<TempReading> filteredTempReadings = _temperatureContext.TempReading
                         .Where(x => x.DeviceId == deviceId &&
                                     x.LocationId == locationId &&
                                     x.SensorId == sensorId &&
                                     x.TakenAt >= searchStartDateTime &&
-                                    x.TakenAt < searchEndDateTime)
-                        .Select(x => new WebClientTempReadingDto { TakenAt = x.TakenAt, Temperature = x.Temperature })
-                        .ToListAsync();
+                                    x.TakenAt < searchEndDateTime);
+                    IQueryable<WebClientTempReadingDto> groupedTempReadings = ApplyGrouping(filteredTempReadings, range);
+                    return await groupedTempReadings.ToListAsync();
                 },
                 TimeSpan.FromHours(12),
                 (List<WebClientTempReadingDto> r) => searchEndDateTime <= DateTime.UtcNow.AddMinutes(-5));
             return Ok(result);
+        }
+
+        private static IQueryable<WebClientTempReadingDto> ApplyGrouping(IQueryable<TempReading> filteredTempReadings, WebClientGetTempReadingRange range)
+        {
+            switch (range)
+            {
+                case WebClientGetTempReadingRange.Hour:
+                    // Grouping for every 10 seconds. Max: 360 readings.
+                    return filteredTempReadings
+                        .GroupBy(s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, s.TakenAt.Minute, s.TakenAt.Second / 10 * 10), t => new { t.Temperature, t.TakenAt })
+                        .Select(g => new WebClientTempReadingDto { TakenAt = g.Key, Temperature = Math.Round(g.Average(a => a.Temperature), 2) });
+                case WebClientGetTempReadingRange.Day:
+                    // Grouping for every 2 minutes. Max: 720 readings.
+                    return filteredTempReadings
+                        .GroupBy(s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, s.TakenAt.Minute / 2 * 2, 0), t => new { t.Temperature, t.TakenAt })
+                        .Select(g => new WebClientTempReadingDto{ TakenAt = g.Key, Temperature = Math.Round(g.Average(a => a.Temperature), 2) });
+                case WebClientGetTempReadingRange.Week:
+                    // Grouping for every 15 minutes. Max: 672 readings.
+                    return filteredTempReadings
+                        .GroupBy(s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, s.TakenAt.Minute / 15 * 15, 0), t => new { t.Temperature, t.TakenAt })
+                        .Select(g => new WebClientTempReadingDto { TakenAt = g.Key, Temperature = Math.Round(g.Average(a => a.Temperature), 2) });
+                case WebClientGetTempReadingRange.Month:
+                    // Grouping for every 1 hour. Max: 672-744 readings.
+                    return filteredTempReadings
+                        .GroupBy(s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, 0, 0), t => new { t.Temperature, t.TakenAt })
+                        .Select(g => new WebClientTempReadingDto { TakenAt = g.Key, Temperature = Math.Round(g.Average(a => a.Temperature), 2) });
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(range), range, null);
+            }
         }
 
         private (DateTime searchStartDateTime, DateTime searchEndDateTime) GetSearchStartAndEndDates(
