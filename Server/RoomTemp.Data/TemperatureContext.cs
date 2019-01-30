@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace RoomTemp.Data
 {
@@ -16,10 +17,19 @@ namespace RoomTemp.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TempReading>().HasOne(t => t.Sensor).WithMany(s => s.TempReadings)
-                .HasForeignKey(t => t.SensorId);
-            modelBuilder.Entity<TempReading>().HasOne(t => t.Device).WithMany(d => d.TempReadings)
-                .HasForeignKey(t => t.DeviceId);
+            modelBuilder.Entity<TempReading>(e =>
+            {
+                e.HasOne(t => t.Sensor)
+                    .WithMany(s => s.TempReadings)
+                    .HasForeignKey(t => t.SensorId);
+
+                e.HasOne(t => t.Device)
+                    .WithMany(d => d.TempReadings)
+                    .HasForeignKey(t => t.DeviceId);
+
+                e.Property(t => t.TakenAt)
+                    .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            });
         }
     }
 }
