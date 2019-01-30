@@ -1,13 +1,15 @@
 import * as React from 'react';
-import './TemperatureChart.css';
-import * as Chart from 'chart.js';
-import { ITemperatureReadingDto } from 'src/interfaces/ITemperatureReadingDto';
-import { getMonday } from 'src/helpers/DateHelper';
-import { getTemperature } from 'src/api/temperatureApi';
 import * as moment from 'moment';
+import * as Chart from 'chart.js';
+
+import { getMonday } from 'src/helpers/DateHelper';
+import './TemperatureChart.css';
+import { ITemperatureReadingDto } from 'src/interfaces/ITemperatureReadingDto';
+import { getTemperature } from 'src/api/temperatureApi';
+
 class TemperatureChart extends React.Component {
   public chart: Chart;
-  public readingInterval: number = 200;
+  public readingInterval: number = 1;
 
   constructor(props: any) {
     super(props);
@@ -55,20 +57,17 @@ class TemperatureChart extends React.Component {
       this.createChart();
     }
 
-    const workedData = readings.filter(
-      (x: any, index: number) => index % this.readingInterval === 0
-    );
+    const workedData = readings.filter((x: any, index: number) => index % this.readingInterval === 0);
     const processedData = workedData.map((x: any) => {
       return {
         t: moment(new Date(x.takenAt))
-          .add(weekNumber, 'w')
-          .toDate(),
+            .add(weekNumber, 'w')
+            .toDate(),
         y: x.temperature
       };
     });
 
-    const datasetLabel =
-      weekNumber === 0 ? 'Current Week' : processedData[0] ? processedData[0].t.getDate() + '' : '';
+    const datasetLabel = weekNumber === 0 ? 'Current Week' : workedData[0] ? new Date(workedData[0].takenAt).toLocaleDateString('en-NZ') + '' : '';
 
     const dataSet: Chart.ChartDataSets = {
       data: processedData,
@@ -93,8 +92,11 @@ class TemperatureChart extends React.Component {
       cubicInterpolationMode: 'default'
     };
 
+    (dataSet as any).SortingIndex = weekNumber;
+
     if (this.chart.data && this.chart.data.datasets) {
       this.chart.data.datasets.push(dataSet);
+      this.chart.data.datasets.sort((x, y) => (x as any).SortingIndex - (y as any).SortingIndex);
       this.chart.update();
     }
   }

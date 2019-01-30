@@ -1,4 +1,4 @@
 export interface ITemperatureReadingDto {
-  takenAt: Date;
+  takenAt: string;
   temperature: number;
 }
