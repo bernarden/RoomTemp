@@ -26,7 +26,7 @@ class TemperatureChart extends React.Component {
     const today = new Date();
     const monday = new Date(today.setDate(today.getDate() - weeksBack * 7));
 
-    const thisMonday = getMonday(monday).toDateString();
+    const thisMonday = moment(getMonday(monday)).format();
     getTemperature(thisMonday).then((data: ITemperatureReadingDto[]) => {
       this.renderChart(data, weeksBack);
     });
