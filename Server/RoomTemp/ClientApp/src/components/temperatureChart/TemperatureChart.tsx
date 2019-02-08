@@ -32,24 +32,25 @@ class TemperatureChart extends React.Component {
     });
   }
 
-  public getColour(week: number): string {
-    let colour: string = 'rgba(75,192,192,0.4)';
-    switch (week) {
-      case 0:
-        colour = '#f4ffff';
-        break;
-      case 1:
-        colour = 'rgba(75,192,192, 1)';
-        break;
-      case 2:
-        colour = 'rgba(75,192,192, .5)';
-        break;
-      case 3:
-        colour = 'rgba(75,192,192, 0.1)';
-        break;
-    }
+  public getColour(week: number, isBorder: boolean): string {
+      switch (week) {
+          case 0:
+              return isBorder ? "rgba(255, 99, 132, 0.8)" : "rgba(255, 99, 132, 1)";
+          case 1:
+              return isBorder ? 'rgba(54, 162, 235, 0.8)' : 'rgba(54, 162, 235, 1)';
+          case 2:
+              return isBorder ? 'rgba(255, 206, 86, 0.8)' : 'rgba(255, 206, 86, 1)';
+          case 3:
+              return isBorder ? 'rgba(75, 192, 192, 0.8)' : 'rgba(75, 192, 192, 1)';
+          case 4:
+              return isBorder ? 'rgba(153, 102, 255, 0.8)' : 'rgba(153, 102, 255, 1)';
+          case 5:
+              return isBorder ? 'rgba(255, 159, 64, 0.8)' : 'rgba(255, 159, 64, 1)';
+          // case 6:
+          //    return isBorder ? "rgba(255, 99, 132, 0.8)" : "rgba(255, 99, 132, 1)";
+      }
 
-    return colour;
+      return '#ffffff';
   }
 
   public renderChart(readings: ITemperatureReadingDto[], weekNumber: number) {
@@ -76,16 +77,16 @@ class TemperatureChart extends React.Component {
       label: datasetLabel,
       fill: false,
       lineTension: 0.1,
-      backgroundColor: this.getColour(weekNumber),
-      borderColor: this.getColour(weekNumber),
+      backgroundColor: this.getColour(weekNumber, false),
+      borderColor: this.getColour(weekNumber, true),
       borderCapStyle: 'butt',
       borderJoinStyle: 'miter',
-      pointBorderColor: this.getColour(weekNumber),
-      pointBackgroundColor: this.getColour(weekNumber),
+      pointBackgroundColor: this.getColour(weekNumber,false),
+      pointBorderColor: this.getColour(weekNumber, true),
       pointBorderWidth: 1,
       pointHoverRadius: 5,
-      pointHoverBackgroundColor: this.getColour(weekNumber),
-      pointHoverBorderColor: this.getColour(weekNumber),
+      pointHoverBackgroundColor: this.getColour(weekNumber, false),
+      pointHoverBorderColor: this.getColour(weekNumber, true),
       pointHoverBorderWidth: 2,
       pointRadius: 1,
       pointHitRadius: 10,
