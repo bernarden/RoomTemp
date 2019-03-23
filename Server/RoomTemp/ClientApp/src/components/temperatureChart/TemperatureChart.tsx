@@ -43,23 +43,34 @@ class TemperatureChart extends React.Component<IProps, IState> {
   }
 
   private retrieveData(): any {
-      this.getTemperatureReadings(0);
-      this.getTemperatureReadings(1);
-      this.getTemperatureReadings(2);
-      this.getTemperatureReadings(3);
+    this.getTemperatureReadings(0);
+    this.getTemperatureReadings(1);
+    this.getTemperatureReadings(2);
+    this.getTemperatureReadings(3);
   }
 
   private getTemperatureReadings(retrivalIndex: number): void {
     const today: Date = new Date();
-    const dateToRetrieve: Date = new Date(today.setDate(today.getDate() - retrivalIndex * 7));
+    const dateToRetrieve: Date = new Date(
+      today.setDate(today.getDate() - retrivalIndex * 7)
+    );
     const dateToRetrieveAsString = moment(dateToRetrieve).format();
 
-    getTemperature(dateToRetrieveAsString, this.props.selectedRange).then((data: ITemperatureReadingDto[]) => {
-      this.renderChart(data, retrivalIndex);
-    });
+    getTemperature(dateToRetrieveAsString, this.props.selectedRange).then(
+      (data: ITemperatureReadingDto[]) => {
+        if (data.length === 0) {
+          return;
+        }
+        
+        this.renderChart(data, retrivalIndex);
+      }
+    );
   }
 
-  private renderChart(retrievedData: ITemperatureReadingDto[], retrivalIndex: number) {
+  private renderChart(
+    retrievedData: ITemperatureReadingDto[],
+    retrivalIndex: number
+  ) {
     const dataSet: Chart.ChartDataSets = ChartConfig.GenerateChartDataset(
       this.props.selectedRange,
       retrivalIndex,
@@ -77,11 +88,13 @@ class TemperatureChart extends React.Component<IProps, IState> {
   }
 
   private createChart() {
-    if(this.chart){
+    if (this.chart) {
       this.chart.data.datasets = [];
     }
     const options = ChartConfig.GetChartOptions(this.props.selectedRange);
-    const ctx: HTMLCanvasElement = document.getElementById("temperatureChart") as HTMLCanvasElement;
+    const ctx: HTMLCanvasElement = document.getElementById(
+      "temperatureChart"
+    ) as HTMLCanvasElement;
     // tslint:disable-next-line:no-unused-expression
     this.chart = new Chart(ctx, options);
   }
