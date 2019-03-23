@@ -48,7 +48,7 @@ namespace RoomTemp.Controllers
                     IQueryable<WebClientTempReadingDto> groupedTempReadings = ApplyGrouping(filteredTempReadings, range);
                     return await groupedTempReadings.ToListAsync();
                 },
-                TimeSpan.FromHours(12),
+                TimeSpan.FromDays(7),
                 (List<WebClientTempReadingDto> r) => searchEndDateTime <= DateTime.UtcNow.AddMinutes(-5));
             return Ok(result);
         }
