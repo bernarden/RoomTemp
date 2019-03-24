@@ -11,9 +11,11 @@ interface IState {
 }
 
 class App extends React.Component<{}, IState> {
+    private selectedRangeLocalStorageKey = 'LastSelectedRange';
+
     constructor(props: any) {
         super(props);
-        this.state = { selectedRange: TempReadingRange.Week };
+        this.state = { selectedRange: this.getDefaultOrLastSelectedRange() };
     }
 
     public render() {
@@ -32,8 +34,19 @@ class App extends React.Component<{}, IState> {
     }
 
     private updateRangeSelection = (range: TempReadingRange) => {
+        localStorage.setItem(this.selectedRangeLocalStorageKey, String(range));
         this.setState({ selectedRange: range });
     };
+
+    private getDefaultOrLastSelectedRange() : TempReadingRange {
+        const lastSelectedRange = localStorage.getItem(this.selectedRangeLocalStorageKey);
+        if (lastSelectedRange) {
+            return Number(lastSelectedRange);
+        }
+
+        localStorage.setItem(this.selectedRangeLocalStorageKey, String(TempReadingRange.Week));
+        return TempReadingRange.Week;
+    }
 }
 
 
