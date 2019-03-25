@@ -49,30 +49,30 @@ class TemperatureChart extends React.Component<IProps, IState> {
     this.getTemperatureReadings(3);
   }
 
-  private getTemperatureReadings(retrivalIndex: number): void {
+  private getTemperatureReadings(retrievalIndex: number): void {
     const today: Date = new Date();
     const dateToRetrieve: Date = new Date(
-      today.setDate(today.getDate() - retrivalIndex * 7)
+      today.setDate(today.getDate() - retrievalIndex * 7)
     );
     const dateToRetrieveAsString = moment(dateToRetrieve).format();
 
     getTemperature(dateToRetrieveAsString, this.props.selectedRange).then(
       (data: ITemperatureReadingsDto) => {
-        this.renderChart(data, retrivalIndex);
+        this.renderChart(data, retrievalIndex);
       }
     );
   }
 
   private renderChart(
     retrievedData: ITemperatureReadingsDto,
-    retrivalIndex: number
+    retrievalIndex: number
   ) {
     const dataSet: Chart.ChartDataSets = ChartConfig.generateChartDataset(
       this.props.selectedRange,
-      retrivalIndex,
+      retrievalIndex,
       retrievedData
     );
-    (dataSet as any).SortingIndex = retrivalIndex;
+    (dataSet as any).SortingIndex = retrievalIndex;
 
     if (this.chart.data && this.chart.data.datasets) {
       this.chart.data.datasets.push(dataSet);

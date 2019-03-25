@@ -45,20 +45,20 @@ export class ChartConfig {
 
   public static generateChartDataset(
     range: TempReadingRange,
-    retrivalIndex: number,
+    retrievalIndex: number,
     retrievedData: ITemperatureReadingsDto
   ): Chart.ChartDataSets {
     const processedData: ChartPoint[] = retrievedData.temperatures.map((x: any) => {
       return {
         t: moment(new Date(x.takenAt))
-          .add(retrivalIndex, "w")
+          .add(retrievalIndex, "w")
           .toDate(),
         y: x.temperature
       };
     });
 
     let datasetLabel: string
-    if (retrivalIndex === 0) {
+    if (retrievalIndex === 0) {
       datasetLabel = this.getCurrentPeriodName(range)
     } else {
       datasetLabel = new Date(retrievedData.searchStartDateTime).toLocaleDateString("en-NZ")
@@ -71,16 +71,16 @@ export class ChartConfig {
       label: datasetLabel,
       fill: false,
       lineTension: 0.1,
-      backgroundColor: this.getColour(retrivalIndex, false),
-      borderColor: this.getColour(retrivalIndex, true),
+      backgroundColor: this.getColour(retrievalIndex, false),
+      borderColor: this.getColour(retrievalIndex, true),
       borderCapStyle: "butt",
       borderJoinStyle: "miter",
-      pointBackgroundColor: this.getColour(retrivalIndex, false),
-      pointBorderColor: this.getColour(retrivalIndex, true),
+      pointBackgroundColor: this.getColour(retrievalIndex, false),
+      pointBorderColor: this.getColour(retrievalIndex, true),
       pointBorderWidth: 1,
       pointHoverRadius: 5,
-      pointHoverBackgroundColor: this.getColour(retrivalIndex, false),
-      pointHoverBorderColor: this.getColour(retrivalIndex, true),
+      pointHoverBackgroundColor: this.getColour(retrievalIndex, false),
+      pointHoverBorderColor: this.getColour(retrievalIndex, true),
       pointHoverBorderWidth: 2,
       pointRadius: 1,
       pointHitRadius: 10,
@@ -104,8 +104,8 @@ export class ChartConfig {
     }
   }
 
-  private static getColour(retrivalIndex: number, isBorder: boolean): string {
-    switch (retrivalIndex) {
+  private static getColour(retrievalIndex: number, isBorder: boolean): string {
+    switch (retrievalIndex) {
       case 0:
         return isBorder ? "rgba(255, 99, 132, 0.8)" : "rgba(255, 99, 132, 1)";
       case 1:
