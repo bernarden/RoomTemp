@@ -35,7 +35,7 @@ namespace RoomTemp.Controllers
 
             var (searchStartDateTime, searchEndDateTime) = GetSearchStartAndEndDates(start, range);
 
-            List<WebClientTempReadingDto> result = await _cachingService.GetCachedValue(
+            WebClientTempReadingsDto result = await _cachingService.GetCachedValue(
                 $"GetTempReadings.{searchStartDateTime:s}.{range:D}.{deviceId}.{locationId}.{sensorId}]",
                 async () =>
                 {
@@ -46,10 +46,16 @@ namespace RoomTemp.Controllers
                                     x.TakenAt >= searchStartDateTime &&
                                     x.TakenAt < searchEndDateTime);
                     IQueryable<WebClientTempReadingDto> groupedTempReadings = ApplyGrouping(filteredTempReadings, range);
-                    return await groupedTempReadings.ToListAsync();
+                    List<WebClientTempReadingDto> temperatures =  await groupedTempReadings.ToListAsync();
+                    return new WebClientTempReadingsDto
+                    {
+                        SearchStartDateTime = searchStartDateTime,
+                        SearchEndDateTime = searchEndDateTime,
+                        Temperatures = temperatures
+                    };
                 },
                 TimeSpan.FromDays(7),
-                (List<WebClientTempReadingDto> r) => searchEndDateTime <= DateTime.UtcNow.AddMinutes(-5));
+                (WebClientTempReadingsDto r) => searchEndDateTime <= DateTime.UtcNow.AddMinutes(-5));
             return Ok(result);
         }
 

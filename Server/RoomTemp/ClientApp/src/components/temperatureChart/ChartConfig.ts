@@ -2,10 +2,10 @@ import * as moment from "moment";
 import { ChartPoint, TimeDisplayFormat, TimeUnit } from "chart.js";
 
 import { TempReadingRange } from "src/api/tempReadingRange";
-import { ITemperatureReadingDto } from "src/interfaces/ITemperatureReadingDto";
+import { ITemperatureReadingsDto } from "src/interfaces/ITemperatureReadingsDto";
 
 export class ChartConfig {
-  public static GetChartOptions(range: TempReadingRange) {
+  public static getChartOptions(range: TempReadingRange) {
     let specifiedUnit: TimeUnit | undefined;
     let specifiedDisplayFormats: TimeDisplayFormat | undefined;
     if (range === TempReadingRange.Week) {
@@ -43,12 +43,12 @@ export class ChartConfig {
     return options;
   }
 
-  public static GenerateChartDataset(
+  public static generateChartDataset(
     range: TempReadingRange,
     retrivalIndex: number,
-    retrievedData: ITemperatureReadingDto[]
+    retrievedData: ITemperatureReadingsDto
   ): Chart.ChartDataSets {
-    const processedData: ChartPoint[] = retrievedData.map((x: any) => {
+    const processedData: ChartPoint[] = retrievedData.temperatures.map((x: any) => {
       return {
         t: moment(new Date(x.takenAt))
           .add(retrivalIndex, "w")
@@ -57,7 +57,12 @@ export class ChartConfig {
       };
     });
 
-    const datasetLabel: string = retrivalIndex === 0 ? this.getCurrentPeriodName(range) : new Date(retrievedData[0].takenAt).toLocaleDateString("en-NZ");
+    let datasetLabel: string
+    if (retrivalIndex === 0) {
+      datasetLabel = this.getCurrentPeriodName(range)
+    } else {
+      datasetLabel = new Date(retrievedData.searchStartDateTime).toLocaleDateString("en-NZ")
+    }
   
     const dataSet: Chart.ChartDataSets = {
       data: processedData,

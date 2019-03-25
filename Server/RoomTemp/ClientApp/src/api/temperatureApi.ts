@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-import { ITemperatureReadingDto } from 'src/interfaces/ITemperatureReadingDto';
+import { ITemperatureReadingsDto } from 'src/interfaces/ITemperatureReadingsDto';
 import { TempReadingRange } from './tempReadingRange';
 
-export const getTemperature = (startDate: string, range: TempReadingRange ): Promise<ITemperatureReadingDto[]> => {
+export const getTemperature = (startDate: string, range: TempReadingRange ): Promise<ITemperatureReadingsDto> => {
   return axios
     .get(
       `/api/webclient/tempreadings?start=${encodeURIComponent(startDate)}&range=${range}&deviceId=1&locationId=3&sensorId=1`

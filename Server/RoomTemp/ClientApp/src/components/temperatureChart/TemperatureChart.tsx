@@ -3,7 +3,7 @@ import * as moment from "moment";
 import * as Chart from "chart.js";
 
 import "./TemperatureChart.css";
-import { ITemperatureReadingDto } from "src/interfaces/ITemperatureReadingDto";
+import { ITemperatureReadingsDto } from "src/interfaces/ITemperatureReadingsDto";
 import { getTemperature } from "src/api/temperatureApi";
 import { TempReadingRange } from "src/api/tempReadingRange";
 import { ChartConfig } from "./ChartConfig";
@@ -57,21 +57,17 @@ class TemperatureChart extends React.Component<IProps, IState> {
     const dateToRetrieveAsString = moment(dateToRetrieve).format();
 
     getTemperature(dateToRetrieveAsString, this.props.selectedRange).then(
-      (data: ITemperatureReadingDto[]) => {
-        if (data.length === 0) {
-          return;
-        }
-        
+      (data: ITemperatureReadingsDto) => {
         this.renderChart(data, retrivalIndex);
       }
     );
   }
 
   private renderChart(
-    retrievedData: ITemperatureReadingDto[],
+    retrievedData: ITemperatureReadingsDto,
     retrivalIndex: number
   ) {
-    const dataSet: Chart.ChartDataSets = ChartConfig.GenerateChartDataset(
+    const dataSet: Chart.ChartDataSets = ChartConfig.generateChartDataset(
       this.props.selectedRange,
       retrivalIndex,
       retrievedData
@@ -91,7 +87,7 @@ class TemperatureChart extends React.Component<IProps, IState> {
     if (this.chart) {
       this.chart.data.datasets = [];
     }
-    const options = ChartConfig.GetChartOptions(this.props.selectedRange);
+    const options = ChartConfig.getChartOptions(this.props.selectedRange);
     const ctx: HTMLCanvasElement = document.getElementById(
       "temperatureChart"
     ) as HTMLCanvasElement;
