@@ -17,8 +17,8 @@ interface IState {
 }
 
 class TemperatureChart extends React.Component<IProps, IState> {
-  public chart: Chart;
-  public readingInterval: number = 1;
+  private chart: Chart;
+  private requestTimestamp: number = 1;
 
   constructor(props: any) {
     super(props);
@@ -32,6 +32,7 @@ class TemperatureChart extends React.Component<IProps, IState> {
 
   public componentDidUpdate() {
     if (this.props.selectedRange !== this.state.selectedRange) {
+      this.requestTimestamp = this.requestTimestamp + 1;
       this.createChart();
       this.retrieveData();
       this.setState({ selectedRange: this.props.selectedRange });
@@ -42,25 +43,28 @@ class TemperatureChart extends React.Component<IProps, IState> {
     return <canvas id="temperatureChart" className="chart-container" />;
   }
 
-  private retrieveData(): any {
+  private retrieveData(): void {
     this.getTemperatureReadings(0);
     this.getTemperatureReadings(1);
     this.getTemperatureReadings(2);
     this.getTemperatureReadings(3);
   }
 
-  private getTemperatureReadings(retrievalIndex: number): void {
+  private async getTemperatureReadings(retrievalIndex: number): Promise<void> {
     const today: Date = new Date();
     const dateToRetrieve: Date = new Date(
       today.setDate(today.getDate() - retrievalIndex * 7)
     );
     const dateToRetrieveAsString = moment(dateToRetrieve).format();
-
-    getTemperature(dateToRetrieveAsString, this.props.selectedRange).then(
-      (data: ITemperatureReadingsDto) => {
-        this.renderChart(data, retrievalIndex);
-      }
+    
+    const timestampBeforeRequest = this.requestTimestamp;
+    const data: ITemperatureReadingsDto = await getTemperature(
+      dateToRetrieveAsString,
+      this.props.selectedRange
     );
+    if (this.requestTimestamp === timestampBeforeRequest) {
+      this.renderChart(data, retrievalIndex);
+    }
   }
 
   private renderChart(
