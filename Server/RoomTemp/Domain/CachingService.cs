@@ -13,7 +13,7 @@ namespace RoomTemp.Domain
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, TimeSpan expireIn,
+        public async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, Func<T, TimeSpan> expireIn,
             Func<T, bool> shouldCacheResult = null)
         {
             if (_cache.TryGetValue(key, out T cacheEntry))
@@ -22,7 +22,8 @@ namespace RoomTemp.Domain
             var valueToCache = await func();
             if (shouldCacheResult?.Invoke(valueToCache) ?? true)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expireIn);
+                var expireInValue = expireIn.Invoke(valueToCache);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expireInValue);
                 _cache.Set(key, valueToCache, cacheEntryOptions);
             }
 
