@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@types/chart.js": "^2.7.49",
-    "axios": "^0.18.0",
+    "@types/chart.js": "^2.7.55",
+    "axios": "^0.19.0",
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
     "moment": "^2.24.0",
-    "react": "^16.8.5",
-    "react-dom": "^16.8.5",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "react-scripts-ts": "^4.0.8"
   },
   "scripts": {
@@ -20,12 +20,12 @@
   },
   "devDependencies": {
     "@types/canvasjs": "^1.9.5",
-    "@types/classnames": "^2.2.7",
-    "@types/jest": "^24.0.11",
-    "@types/node": "^11.11.6",
-    "@types/react": "^16.8.8",
-    "@types/react-dom": "^16.8.3",
-    "typescript": "^3.3.4000"
+    "@types/classnames": "^2.2.9",
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.0.12",
+    "@types/react": "^16.8.23",
+    "@types/react-dom": "^16.8.4",
+    "typescript": "^3.5.2"
   },
   "browserslist": [
     ">0.2%",
