@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomTemp.Data;
 
 namespace RoomTemp.Data.Migrations
 {
     [DbContext(typeof(TemperatureContext))]
-    partial class TemperatureContextModelSnapshot : ModelSnapshot
+    [Migration("20190722074713_TempReadingTakenAtIndex")]
+    partial class TempReadingTakenAtIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

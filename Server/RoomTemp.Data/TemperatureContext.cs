@@ -27,6 +27,7 @@ namespace RoomTemp.Data
                     .WithMany(d => d.TempReadings)
                     .HasForeignKey(t => t.DeviceId);
 
+                e.HasIndex(t => t.TakenAt);
                 e.Property(t => t.TakenAt)
                     .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             });
