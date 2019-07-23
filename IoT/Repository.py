@@ -63,8 +63,8 @@ class Repository(object):
             "Id",
             "Temperature", 
             "TakenAt", 
-            "SensorId", 
             "LocationId",
+            "SensorId", 
             "IsSynced"
             FROM TempReading 
             WHERE IsSynced = 0 AND TakenAt < ?
