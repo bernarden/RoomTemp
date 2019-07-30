@@ -5,14 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="GraphQL-Parser">
-      <HintPath>..\..\..\..\Users\Bernarden\.nuget\packages\graphql-parser\3.0.0\lib\netstandard1.1\GraphQL-Parser.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
   </ItemGroup>
 
 </Project>

@@ -32,7 +32,7 @@ namespace RoomTemp.Controllers
                 return Unauthorized();
             }
 
-           var result = new DeviceDto
+            var result = new DeviceDto
             {
                 Id = device.Id,
                 Name = device.Name,

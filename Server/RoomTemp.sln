@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoomTemp", "RoomTemp\RoomTemp.csproj", "{9B64700E-96EC-4BC4-9EB9-F1ED69C82EC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomTemp.Data", "RoomTemp.Data\RoomTemp.Data.csproj", "{3B721634-4AE6-4F25-AD3A-545DFCE477E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoomTemp.Data", "RoomTemp.Data\RoomTemp.Data.csproj", "{3B721634-4AE6-4F25-AD3A-545DFCE477E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomTemp.Tests", "RoomTemp.Tests\RoomTemp.Tests.csproj", "{0AF051F8-05B8-443E-9B14-DAF9E241167B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoomTemp.Tests", "RoomTemp.Tests\RoomTemp.Tests.csproj", "{0AF051F8-05B8-443E-9B14-DAF9E241167B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

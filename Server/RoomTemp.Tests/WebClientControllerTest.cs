@@ -98,9 +98,12 @@ namespace RoomTemp.Tests
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
             Assert.NotNull(responseString);
-            var result = JsonConvert.DeserializeObject<IList<WebClientTempReadingDto>>(responseString);
-            result.Should().NotBeNullOrEmpty();
-            result.Count.Should().Be(5);
+            var result = JsonConvert.DeserializeObject<WebClientTempReadingsDto>(responseString);
+            result.Should().NotBeNull();
+            result.SearchStartDateTime.Should().Be(datetime.AddHours(-1));
+            result.SearchEndDateTime.Should().Be(datetime.AddDays(1).AddHours(-1));
+            result.Temperatures.Should().NotBeNullOrEmpty();
+            result.Temperatures.Count.Should().Be(5);
         }
     }
 }
