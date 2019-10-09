@@ -63,29 +63,34 @@ namespace RoomTemp
             }
 
             var connectionStrings = Configuration.GetSection("ConnectionStrings");
-            var sqliteSettings = connectionStrings.GetSection("Sqlite");
-            if (sqliteSettings.GetValue<bool>("isActive"))
+            var database = connectionStrings.GetValue<string>("Database");
+            var connectionString = connectionStrings.GetValue<string>(database);
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                services.AddDbContext<TemperatureContext>(o =>
-                    o.UseSqlite(sqliteSettings.GetValue<string>("value")));
-                return;
+                const string message = "Database connection string is missing. Terminating execution";
+                Console.WriteLine(message);
+                throw new Exception(message);
             }
 
-            var sqlServerSettings = connectionStrings.GetSection("SqlServer");
-            if (sqlServerSettings.GetValue<bool>("isActive"))
+            switch (database)
             {
-                services.AddDbContext<TemperatureContext>(o =>
-                    o.UseSqlServer(sqlServerSettings.GetValue<string>("value")));
-                return;
+                case "SqlServer":
+                    services.AddDbContext<TemperatureContext>(o => o.UseSqlite(connectionString));
+                    break;
+                case "Sqlite":
+                    services.AddDbContext<TemperatureContext>(o => o.UseSqlServer(connectionString));
+                    break;
+                default:
+                    var message = $"Could not configure Db Context. Database '{database}' is not supported.";
+                    Console.WriteLine(message);
+                    throw new Exception(message);
             }
-
-            throw new Exception("Could not configure Db Context injection.");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment() || Env.IsEnvironment(LocalTestsEnvironment))
+            if (Env.IsDevelopment() || Env.IsEnvironment(LocalTestsEnvironment))
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -111,7 +116,7 @@ namespace RoomTemp
             {
                 spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment()) spa.UseReactDevelopmentServer("start");
+                if (Env.IsDevelopment()) spa.UseReactDevelopmentServer("start");
             });
         }
 
