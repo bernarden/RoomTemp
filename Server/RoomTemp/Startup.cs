@@ -75,10 +75,10 @@ namespace RoomTemp
             switch (database)
             {
                 case "SqlServer":
-                    services.AddDbContext<TemperatureContext>(o => o.UseSqlite(connectionString));
+                    services.AddDbContext<TemperatureContext>(o => o.UseSqlServer(connectionString));
                     break;
                 case "Sqlite":
-                    services.AddDbContext<TemperatureContext>(o => o.UseSqlServer(connectionString));
+                    services.AddDbContext<TemperatureContext>(o => o.UseSqlite(connectionString));
                     break;
                 default:
                     var message = $"Could not configure Db Context. Database '{database}' is not supported.";
@@ -88,7 +88,7 @@ namespace RoomTemp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             if (Env.IsDevelopment() || Env.IsEnvironment(LocalTestsEnvironment))
             {
