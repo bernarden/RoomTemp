@@ -10,6 +10,11 @@ namespace RoomTemp.Domain
             Func<T, TimeSpan> expireIn,
             Func<T, bool> shouldCacheResult = null);
 
+        T GetCachedValue<T>(string key,
+            Func<T> func,
+            Func<T, TimeSpan> expireIn,
+            Func<T, bool> shouldCacheResult = null);
+
         T GetCachedValue<T>(string key, Func<T> func, TimeSpan expireIn, Func<T, bool> shouldCacheResult = null);
 
         void ResetCache(string key);
