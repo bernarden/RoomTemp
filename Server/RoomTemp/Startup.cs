@@ -51,6 +51,7 @@ namespace RoomTemp
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+            services.AddApplicationInsightsTelemetry();
         }
 
         private void ConfigureDbContext(IServiceCollection services)
