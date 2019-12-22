@@ -62,7 +62,7 @@ class TemperatureChart extends React.Component<IProps, IState> {
       dateToRetrieveAsString,
       this.props.selectedRange
     );
-    if (this.requestTimestamp === timestampBeforeRequest) {
+    if (data && this.requestTimestamp === timestampBeforeRequest) {
       this.renderChart(data, retrievalIndex);
     }
   }
