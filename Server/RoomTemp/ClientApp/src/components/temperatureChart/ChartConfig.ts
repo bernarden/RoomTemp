@@ -1,8 +1,8 @@
-import * as moment from "moment";
+import moment from "moment";
 import { ChartPoint, TimeDisplayFormat, TimeUnit } from "chart.js";
 
-import { TempReadingRange } from "src/api/tempReadingRange";
-import { ITemperatureReadingsDto } from "src/interfaces/ITemperatureReadingsDto";
+import { TempReadingRange } from "../../api/tempReadingRange";
+import { ITemperatureReadingsDto } from "../../interfaces/ITemperatureReadingsDto";
 
 export class ChartConfig {
   public static getChartOptions(range: TempReadingRange) {

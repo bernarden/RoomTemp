@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { ITemperatureReadingsDto } from 'src/interfaces/ITemperatureReadingsDto';
+import { ITemperatureReadingsDto } from '../interfaces/ITemperatureReadingsDto';
 import { TempReadingRange } from './tempReadingRange';
 
 export const getTemperature = (startDate: string, range: TempReadingRange ): Promise<ITemperatureReadingsDto> => {

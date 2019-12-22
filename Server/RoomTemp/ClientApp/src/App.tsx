@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 
-import './App.css';
 import logo from './logo.svg';
 import TemperatureChart from './components/temperatureChart/TemperatureChart';
 import { TempReadingRange } from './api/tempReadingRange';
 import RangeSelector from './components/rangeSelector/RangeSelector';
+import './App.css';
 
 interface IState {
     selectedRange: TempReadingRange
@@ -23,7 +23,7 @@ class App extends React.Component<{}, IState> {
             <div className="App">
                 <header className="App-header">
                     <img src={logo} className="App-logo" alt="logo"/>
-                    <h1 className="App-title">Temperature Readings</h1>
+                    <div className="App-title">Temperature Readings</div>
                 </header>
 
                 <RangeSelector selectedRange={this.state.selectedRange} updateRange={this.updateRangeSelection}/>

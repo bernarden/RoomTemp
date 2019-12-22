@@ -1,11 +1,11 @@
-import * as React from "react";
-import * as moment from "moment";
-import * as Chart from "chart.js";
+import React from "react";
+import moment from "moment";
+import Chart from "chart.js";
 
 import "./TemperatureChart.css";
-import { ITemperatureReadingsDto } from "src/interfaces/ITemperatureReadingsDto";
-import { getTemperature } from "src/api/temperatureApi";
-import { TempReadingRange } from "src/api/tempReadingRange";
+import { ITemperatureReadingsDto } from "../../interfaces/ITemperatureReadingsDto";
+import { getTemperature } from "../../api/temperatureApi";
+import { TempReadingRange } from "../../api/tempReadingRange";
 import { ChartConfig } from "./ChartConfig";
 
 interface IProps {
@@ -17,7 +17,7 @@ interface IState {
 }
 
 class TemperatureChart extends React.Component<IProps, IState> {
-  private chart: Chart;
+  private chart: Chart | undefined;
   private requestTimestamp: number = 1;
 
   constructor(props: any) {
@@ -78,7 +78,7 @@ class TemperatureChart extends React.Component<IProps, IState> {
     );
     (dataSet as any).SortingIndex = retrievalIndex;
 
-    if (this.chart.data && this.chart.data.datasets) {
+    if (this.chart && this.chart.data && this.chart.data.datasets) {
       this.chart.data.datasets.push(dataSet);
       this.chart.data.datasets.sort(
         (x, y) => (x as any).SortingIndex - (y as any).SortingIndex
@@ -95,7 +95,6 @@ class TemperatureChart extends React.Component<IProps, IState> {
     const ctx: HTMLCanvasElement = document.getElementById(
       "temperatureChart"
     ) as HTMLCanvasElement;
-    // tslint:disable-next-line:no-unused-expression
     this.chart = new Chart(ctx, options);
   }
 }

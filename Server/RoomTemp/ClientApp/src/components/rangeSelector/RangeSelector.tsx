@@ -1,7 +1,7 @@
-import * as React from 'react';
-import * as classnames from 'classnames';
+import React from 'react';
+import classnames from 'classnames';
 
-import { TempReadingRange } from 'src/api/tempReadingRange';
+import { TempReadingRange } from '../../api/tempReadingRange';
 import './RangeSelector.css';
 
 interface IProps {
