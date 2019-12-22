@@ -53,9 +53,7 @@ namespace RoomTemp.Controllers
                         Temperatures = temperatures
                     };
                 },
-                r => searchEndDateTime <= DateTime.UtcNow.AddMinutes(-5)
-                    ? TimeSpan.FromDays(7)
-                    : TimeSpan.FromMinutes(5),
+                r => TimeSpan.FromMilliseconds(1),
                 r => true);
             return Ok(result);
         }
