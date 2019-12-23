@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -103,7 +103,7 @@ namespace RoomTemp.Tests
             result.SearchStartDateTime.Should().Be(datetime.AddHours(-1));
             result.SearchEndDateTime.Should().Be(datetime.AddDays(1).AddHours(-1));
             result.Temperatures.Should().NotBeNullOrEmpty();
-            result.Temperatures.Count.Should().Be(5);
+            result.Temperatures.Count().Should().Be(5);
         }
     }
 }

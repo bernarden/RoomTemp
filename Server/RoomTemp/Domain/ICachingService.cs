@@ -5,7 +5,7 @@ namespace RoomTemp.Domain
 {
     public interface ICachingService
     {
-        Task<T> GetCachedValue<T>(string key, 
+        Task<T> GetCachedValueAsync<T>(string key, 
             Func<Task<T>> func, 
             Func<T, TimeSpan> expireIn,
             Func<T, bool> shouldCacheResult = null);

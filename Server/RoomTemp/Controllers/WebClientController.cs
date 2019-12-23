@@ -1,7 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using RoomTemp.Data;
 using RoomTemp.Domain;
 using RoomTemp.Models;
@@ -13,16 +19,14 @@ namespace RoomTemp.Controllers
     public class WebClientController : ControllerBase
     {
         private readonly ICachingService _cachingService;
-        private readonly TemperatureContext _temperatureContext;
 
-        public WebClientController(ICachingService cachingService, TemperatureContext temperatureContext)
+        public WebClientController(ICachingService cachingService)
         {
             _cachingService = cachingService ?? throw new ArgumentNullException(nameof(cachingService));
-            _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
         }
 
         [HttpGet("tempReadings")]
-        public IActionResult GetTempReadings(DateTimeOffset start, WebClientGetTempReadingRange range,
+        public async Task<IActionResult> GetTempReadings(DateTimeOffset start, WebClientGetTempReadingRange range,
             int deviceId, int locationId, int sensorId)
         {
             if (start == DateTimeOffset.MinValue) return BadRequest("Please specify start.");
@@ -32,30 +36,35 @@ namespace RoomTemp.Controllers
             if (sensorId <= 0) return BadRequest("Please specify valid sensor id.");
 
             var (searchStartDateTime, searchEndDateTime) = GetSearchStartAndEndDates(start, range);
-
-            var result = _cachingService.GetCachedValue(
+            var result = await _cachingService.GetCachedValueAsync(
                 $"GetTempReadings.{searchStartDateTime:s}.{range:D}.{deviceId}.{locationId}.{sensorId}]",
-                () =>
+                async () =>
                 {
-                    var filteredTempReadings = _temperatureContext.TempReading
-                        .Where(x => x.DeviceId == deviceId &&
-                                    x.LocationId == locationId &&
-                                    x.SensorId == sensorId &&
-                                    x.TakenAt >= searchStartDateTime &&
-                                    x.TakenAt < searchEndDateTime)
-                        .AsEnumerable();
+                    var connectionStrings = Startup.Configuration.GetSection("ConnectionStrings");
+                    var database = connectionStrings.GetValue<string>("Database");
+                    var connectionString = connectionStrings.GetValue<string>(database);
 
-                    var temperatures = GetAverageTemperaturesGroupedByTime(filteredTempReadings, range);
-                    return new WebClientTempReadingsDto
-                    {
-                        SearchStartDateTime = searchStartDateTime,
-                        SearchEndDateTime = searchEndDateTime,
-                        Temperatures = temperatures
-                    };
+                    await using SqlConnection connection = new SqlConnection(connectionString);
+                    await connection.OpenAsync();
+                    Stopwatch storedProcedure = new Stopwatch();
+                    storedProcedure.Start();
+
+                    var temperatureReadings1 = await connection.QueryAsync<WebClientTempReadingDto>(
+                        "sp_GetAggregatedTemperatureReadings",
+                        new { deviceId, locationId, sensorId, searchStartDateTime, searchEndDateTime },
+                        commandType: CommandType.StoredProcedure);
+                    storedProcedure.Stop();
+
+                    return temperatureReadings1;
                 },
-                r => TimeSpan.FromMilliseconds(1),
+                r => TimeSpan.FromTicks(1),
                 r => true);
-            return Ok(result);
+            return Ok(new WebClientTempReadingsDto
+            {
+                Temperatures = result,
+                SearchStartDateTime = searchStartDateTime,
+                SearchEndDateTime = searchEndDateTime,
+            });
         }
 
         private static List<WebClientTempReadingDto> GetAverageTemperaturesGroupedByTime(
@@ -124,7 +133,7 @@ namespace RoomTemp.Controllers
                     break;
                 case WebClientGetTempReadingRange.Week:
                     searchStartDateTime = start
-                        .AddDays(start.DayOfWeek == DayOfWeek.Sunday ? -6 : -(int) start.DayOfWeek + 1)
+                        .AddDays(start.DayOfWeek == DayOfWeek.Sunday ? -6 : -(int)start.DayOfWeek + 1)
                         .AddHours(-start.Hour)
                         .AddMinutes(-start.Minute)
                         .AddSeconds(-start.Second)

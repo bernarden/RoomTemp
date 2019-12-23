@@ -13,7 +13,7 @@ namespace RoomTemp.Domain
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public async Task<T> GetCachedValue<T>(string key, Func<Task<T>> func, Func<T, TimeSpan> expireIn,
+        public async Task<T> GetCachedValueAsync<T>(string key, Func<Task<T>> func, Func<T, TimeSpan> expireIn,
             Func<T, bool> shouldCacheResult = null)
         {
             if (_cache.TryGetValue(key, out T cacheEntry))
