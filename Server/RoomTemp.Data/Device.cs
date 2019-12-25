@@ -8,7 +8,10 @@ namespace RoomTemp.Data
     {
         [Key]
         public int Id { get; set; }
+
+        [MaxLength(100)]
         public string Name { get; set; }
+        
         public Guid Key { get; set; }
 
         public ICollection<TempReading> TempReadings { get; set; }

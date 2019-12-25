@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using RoomTemp.Data;
 using RoomTemp.Domain;
 using RoomTemp.Models;
 
@@ -46,16 +42,11 @@ namespace RoomTemp.Controllers
 
                     await using SqlConnection connection = new SqlConnection(connectionString);
                     await connection.OpenAsync();
-                    Stopwatch storedProcedure = new Stopwatch();
-                    storedProcedure.Start();
-
-                    var temperatureReadings1 = await connection.QueryAsync<WebClientTempReadingDto>(
+                    var temperatureReadings = await connection.QueryAsync<WebClientTempReadingDto>(
                         "sp_GetAggregatedTemperatureReadings",
                         new { deviceId, locationId, sensorId, searchStartDateTime, searchEndDateTime },
                         commandType: CommandType.StoredProcedure);
-                    storedProcedure.Stop();
-
-                    return temperatureReadings1;
+                    return temperatureReadings;
                 },
                 r => TimeSpan.FromTicks(1),
                 r => true);
@@ -65,46 +56,6 @@ namespace RoomTemp.Controllers
                 SearchStartDateTime = searchStartDateTime,
                 SearchEndDateTime = searchEndDateTime,
             });
-        }
-
-        private static List<WebClientTempReadingDto> GetAverageTemperaturesGroupedByTime(
-            IEnumerable<TempReading> filteredTempReadings, WebClientGetTempReadingRange range)
-        {
-            // TODO: Currently EF Core doesn't evaluate AVERAGE function on server side (in DB) so have to do in memory. Revisit this later. 
-            Func<TempReading, DateTime> takenAtGroupingFunction;
-            switch (range)
-            {
-                case WebClientGetTempReadingRange.Hour:
-                    // Grouping for every 10 seconds. Max: 360 readings.
-                    takenAtGroupingFunction = s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day,
-                        s.TakenAt.Hour, s.TakenAt.Minute, s.TakenAt.Second / 10 * 10);
-                    break;
-                case WebClientGetTempReadingRange.Day:
-                    // Grouping for every 2 minutes. Max: 720 readings.
-                    takenAtGroupingFunction = s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day,
-                        s.TakenAt.Hour, s.TakenAt.Minute / 2 * 2, 0);
-                    break;
-                case WebClientGetTempReadingRange.Week:
-                    // Grouping for every 15 minutes. Max: 672 readings.
-                    takenAtGroupingFunction = s => new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day,
-                        s.TakenAt.Hour, s.TakenAt.Minute / 15 * 15, 0);
-                    break;
-                case WebClientGetTempReadingRange.Month:
-                    // Grouping for every 1 hour. Max: 672-744 readings.
-                    takenAtGroupingFunction = s =>
-                        new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, 0, 0);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(range), range, null);
-            }
-
-            return filteredTempReadings
-                .GroupBy(takenAtGroupingFunction, t => new { t.Temperature, t.TakenAt })
-                .Select(g => new WebClientTempReadingDto
-                {
-                    TakenAt = DateTime.SpecifyKind(g.Key, DateTimeKind.Utc),
-                    Temperature = Math.Round(g.Average(a => a.Temperature), 2)
-                }).ToList();
         }
 
         private (DateTime searchStartDateTime, DateTime searchEndDateTime) GetSearchStartAndEndDates(
