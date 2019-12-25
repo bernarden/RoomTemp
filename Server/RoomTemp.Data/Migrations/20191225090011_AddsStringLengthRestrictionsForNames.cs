@@ -6,6 +6,8 @@ namespace RoomTemp.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.IsSqlite()) return;
+
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 table: "Sensor",
@@ -33,6 +35,8 @@ namespace RoomTemp.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.IsSqlite()) return;
+
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 table: "Sensor",

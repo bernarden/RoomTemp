@@ -63,9 +63,8 @@ namespace RoomTemp
                 return;
             }
 
-            var connectionStrings = Configuration.GetSection("ConnectionStrings");
-            var database = connectionStrings.GetValue<string>("Database");
-            var connectionString = connectionStrings.GetValue<string>(database);
+            var database = Configuration.GetConnectionString("Database");
+            var connectionString = Configuration.GetConnectionString(database);
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 const string message = "Database connection string is missing. Terminating execution";

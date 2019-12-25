@@ -6,7 +6,9 @@ namespace RoomTemp.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"
+            if (migrationBuilder.IsSqlServer())
+            {
+                migrationBuilder.Sql(@"
 CREATE OR ALTER PROCEDURE [dbo].[sp_GetAggregatedTemperatureReadings]
 (
 	@LocationId int, 
@@ -32,6 +34,7 @@ BEGIN
 	GROUP BY CAST([TakenAt] as date), DATEPART(hour, [TakenAt])
 	ORDER BY TakenAt
 END");
+            }
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

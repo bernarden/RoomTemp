@@ -1,10 +1,13 @@
 using System;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using RoomTemp.Data;
 using RoomTemp.Domain;
 using RoomTemp.Models;
 
@@ -14,10 +17,12 @@ namespace RoomTemp.Controllers
     [ApiController]
     public class WebClientController : ControllerBase
     {
+        private readonly TemperatureContext _temperatureContext;
         private readonly ICachingService _cachingService;
 
-        public WebClientController(ICachingService cachingService)
+        public WebClientController(TemperatureContext temperatureContext, ICachingService cachingService)
         {
+            _temperatureContext = temperatureContext ?? throw new ArgumentNullException(nameof(temperatureContext));
             _cachingService = cachingService ?? throw new ArgumentNullException(nameof(cachingService));
         }
 
@@ -36,17 +41,37 @@ namespace RoomTemp.Controllers
                 $"GetTempReadings.{searchStartDateTime:s}.{range:D}.{deviceId}.{locationId}.{sensorId}]",
                 async () =>
                 {
-                    var connectionStrings = Startup.Configuration.GetSection("ConnectionStrings");
-                    var database = connectionStrings.GetValue<string>("Database");
-                    var connectionString = connectionStrings.GetValue<string>(database);
+                    if (_temperatureContext.Database.IsSqlServer())
+                    {
+                        var database = Startup.Configuration.GetConnectionString("database");
+                        var connectionString = Startup.Configuration.GetConnectionString(database);
 
-                    await using SqlConnection connection = new SqlConnection(connectionString);
-                    await connection.OpenAsync();
-                    var temperatureReadings = await connection.QueryAsync<WebClientTempReadingDto>(
-                        "sp_GetAggregatedTemperatureReadings",
-                        new { deviceId, locationId, sensorId, searchStartDateTime, searchEndDateTime },
-                        commandType: CommandType.StoredProcedure);
-                    return temperatureReadings;
+                        await using SqlConnection connection = new SqlConnection(connectionString);
+                        await connection.OpenAsync();
+                        var temperatureReadings = await connection.QueryAsync<WebClientTempReadingDto>(
+                            "sp_GetAggregatedTemperatureReadings",
+                            new { deviceId, locationId, sensorId, searchStartDateTime, searchEndDateTime },
+                            commandType: CommandType.StoredProcedure);
+                        return temperatureReadings;
+                    }
+
+                    var temperatures = (await _temperatureContext.TempReading
+                            .Where(x => x.DeviceId == deviceId &&
+                                        x.LocationId == locationId &&
+                                        x.SensorId == sensorId &&
+                                        x.TakenAt >= searchStartDateTime &&
+                                        x.TakenAt < searchEndDateTime)
+                            .ToListAsync())
+                        .GroupBy(s =>
+                                new DateTime(s.TakenAt.Year, s.TakenAt.Month, s.TakenAt.Day, s.TakenAt.Hour, 0, 0),
+                            t => new { t.Temperature, t.TakenAt })
+                        .Select(g => new WebClientTempReadingDto
+                        {
+                            TakenAt = DateTime.SpecifyKind(g.Key, DateTimeKind.Utc),
+                            Temperature = Math.Round(g.Average(a => a.Temperature), 2)
+                        }).ToList();
+
+                    return temperatures;
                 },
                 r => TimeSpan.FromTicks(1),
                 r => true);

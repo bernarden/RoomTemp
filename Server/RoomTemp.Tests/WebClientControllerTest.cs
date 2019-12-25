@@ -27,7 +27,7 @@ namespace RoomTemp.Tests
         private readonly HttpClient _client;
         private readonly TestServer _server;
 
-        [Fact(Skip = "Integration test")]
+        [Fact]
         [Trait("test", "integration")]
         public async void GetTempReadingsTest()
         {
