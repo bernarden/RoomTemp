@@ -125,19 +125,15 @@ namespace RoomTemp
             if (Env.IsEnvironment(LocalTestsEnvironment)) return;
             try
             {
-                using (var serviceScope = app.ApplicationServices
+                using var serviceScope = app.ApplicationServices
                     .GetRequiredService<IServiceScopeFactory>()
-                    .CreateScope())
-                {
-                    using (var context = serviceScope.ServiceProvider.GetService<TemperatureContext>())
-                    {
-                        context.Database.Migrate();
+                    .CreateScope();
+                using var context = serviceScope.ServiceProvider.GetService<TemperatureContext>();
+                context.Database.Migrate();
 
-                        if (context.Device.Any()) return;
-                        context.Device.Add(new Device { Name = "Raspberry Pi 3", Key = Guid.NewGuid() });
-                        context.SaveChanges();
-                    }
-                }
+                if (context.Device.Any()) return;
+                context.Device.Add(new Device { Name = "Raspberry Pi 3", Key = Guid.NewGuid() });
+                context.SaveChanges();
             }
             catch (Exception e)
             {
