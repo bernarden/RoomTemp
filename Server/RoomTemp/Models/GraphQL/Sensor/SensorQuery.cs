@@ -1,4 +1,5 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Types;
 using RoomTemp.Data.Repositories;
 
 namespace RoomTemp.Models.GraphQL.Sensor

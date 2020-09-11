@@ -1,6 +1,6 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Types;
 using RoomTemp.Data.Repositories;
-using RoomTemp.Models.GraphQL.Device;
 
 namespace RoomTemp.Models.GraphQL.Device
 {
