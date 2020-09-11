@@ -4,7 +4,19 @@ namespace RoomTemp.Models
 {
     public class WebClientTempReadingDto
     {
-        public decimal Temperature { get; set; }
-        public DateTime TakenAt { get; set; }
+        private DateTime _takenAt;
+        private decimal _temperature;
+
+        public decimal Temperature
+        {
+            get => _temperature;
+            set => _temperature = Math.Round(value, 2);
+        }
+
+        public DateTime TakenAt
+        {
+            get => _takenAt;
+            set => _takenAt = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
     }
 }

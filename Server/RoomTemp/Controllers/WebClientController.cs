@@ -67,8 +67,8 @@ namespace RoomTemp.Controllers
                             t => new { t.Temperature, t.TakenAt })
                         .Select(g => new WebClientTempReadingDto
                         {
-                            TakenAt = DateTime.SpecifyKind(g.Key, DateTimeKind.Utc),
-                            Temperature = Math.Round(g.Average(a => a.Temperature), 2)
+                            TakenAt = g.Key,
+                            Temperature = g.Average(a => a.Temperature)
                         }).ToList();
 
                     return temperatures;
