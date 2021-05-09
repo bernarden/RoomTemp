@@ -1,6 +1,7 @@
 import React from "react";
 import moment from "moment";
-import Chart from "chart.js";
+import { Chart, ChartDataset } from "chart.js";
+import 'chartjs-adapter-moment';
 
 import "./TemperatureChart.css";
 import { ITemperatureReadingsDto } from "../../interfaces/ITemperatureReadingsDto";
@@ -71,7 +72,7 @@ class TemperatureChart extends React.Component<IProps, IState> {
     retrievedData: ITemperatureReadingsDto,
     retrievalIndex: number
   ) {
-    const dataSet: Chart.ChartDataSets = ChartConfig.generateChartDataset(
+    const dataSet: ChartDataset = ChartConfig.generateChartDataset(
       this.props.selectedRange,
       retrievalIndex,
       retrievedData

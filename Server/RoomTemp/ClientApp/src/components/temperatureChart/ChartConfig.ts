@@ -1,13 +1,23 @@
 import moment from "moment";
-import { ChartPoint, TimeDisplayFormat, TimeUnit } from "chart.js";
+import { ChartConfiguration, ChartDataset, TimeUnit} from "chart.js";
+import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Filler, Legend, TimeScale  } from 'chart.js';
 
 import { TempReadingRange } from "../../api/tempReadingRange";
 import { ITemperatureReadingsDto } from "../../interfaces/ITemperatureReadingsDto";
 
+// TODO: Do we need to register all of these?
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Filler, Legend, TimeScale);
+
+export interface TemperatureDataPoint {
+  x: Date;
+  y: number;
+}
+
+
 export class ChartConfig {
   public static getChartOptions(range: TempReadingRange) {
     let specifiedUnit: TimeUnit | undefined;
-    let specifiedDisplayFormats: TimeDisplayFormat | undefined;
+    let specifiedDisplayFormats;
     if (range === TempReadingRange.Week) {
       specifiedUnit = "day";
       specifiedDisplayFormats = { day: "dddd" };
@@ -16,27 +26,20 @@ export class ChartConfig {
       specifiedDisplayFormats = { day: "HH:mm" };
     }
 
-    const options: Chart.ChartConfiguration = {
+    const options: ChartConfiguration = {
       type: "line",
       data: {
         datasets: []
       },
       options: {
         scales: {
-          type: "time",
-          xAxes: [
-            {
-              type: "time",
-              time: {
-                unitStepSize: 1,
-                unit: specifiedUnit,
-                displayFormats: specifiedDisplayFormats
-              },
-              gridLines: {
-                display: true
-              }
-            }
-          ]
+          x: {
+            type: "time",
+            time: {
+              unit: specifiedUnit,
+              displayFormats: specifiedDisplayFormats
+            },
+          }
         }
       }
     };
@@ -47,10 +50,10 @@ export class ChartConfig {
     range: TempReadingRange,
     retrievalIndex: number,
     retrievedData: ITemperatureReadingsDto
-  ): Chart.ChartDataSets {
-    const processedData: ChartPoint[] = retrievedData.temperatures.map((x: any) => {
+  ): ChartDataset {
+    const processedData: TemperatureDataPoint[] = retrievedData.temperatures.map((x: any) => {
       return {
-        t: moment(new Date(x.takenAt))
+        x: moment(new Date(x.takenAt))
           .add(retrievalIndex, "w")
           .toDate(),
         y: x.temperature
@@ -64,13 +67,12 @@ export class ChartConfig {
       datasetLabel = new Date(retrievedData.searchStartDateTime).toLocaleDateString("en-NZ")
     }
   
-    const dataSet: Chart.ChartDataSets = {
-      data: processedData,
+    const dataSet: ChartDataset = {
+      data: processedData as any,
       type: "line",
       borderWidth: 3,
       label: datasetLabel,
       fill: false,
-      lineTension: 0.1,
       backgroundColor: this.getColour(retrievalIndex, false),
       borderColor: this.getColour(retrievalIndex, true),
       borderCapStyle: "butt",
