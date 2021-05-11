@@ -46,7 +46,7 @@ namespace RoomTemp.Controllers
                         var database = Startup.Configuration.GetConnectionString("database");
                         var connectionString = Startup.Configuration.GetConnectionString(database);
 
-                        await using SqlConnection connection = new SqlConnection(connectionString);
+                        await using SqlConnection connection = new(connectionString);
                         await connection.OpenAsync();
                         var temperatureReadings = await connection.QueryAsync<WebClientTempReadingDto>(
                             "sp_GetAggregatedTemperatureReadings",
@@ -73,8 +73,8 @@ namespace RoomTemp.Controllers
 
                     return temperatures;
                 },
-                r => TimeSpan.FromTicks(1),
-                r => true);
+                _ => TimeSpan.FromTicks(1),
+                _ => true);
             return Ok(new WebClientTempReadingsDto
             {
                 Temperatures = result,
@@ -83,7 +83,7 @@ namespace RoomTemp.Controllers
             });
         }
 
-        private (DateTime searchStartDateTime, DateTime searchEndDateTime) GetSearchStartAndEndDates(
+        private static (DateTime searchStartDateTime, DateTime searchEndDateTime) GetSearchStartAndEndDates(
             DateTimeOffset start, WebClientGetTempReadingRange range)
         {
             DateTime searchStartDateTime;

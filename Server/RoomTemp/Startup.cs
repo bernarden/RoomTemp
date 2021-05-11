@@ -39,7 +39,7 @@ namespace RoomTemp
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             ConfigureDbContext(services);
-            
+
             services.AddTransient<SensorQuery>();
             services.AddTransient<SensorMutation>();
             services.AddTransient<IDocumentExecuter, DocumentExecuter>();
@@ -129,6 +129,46 @@ namespace RoomTemp
                     .GetRequiredService<IServiceScopeFactory>()
                     .CreateScope();
                 using var context = serviceScope.ServiceProvider.GetService<TemperatureContext>();
+
+#if DEBUG
+                if (!context.Database.CanConnect())
+                {
+                    // Generate database with fake data for development. ~ 65MB db.
+                    context.Database.Migrate();
+                    context.Device.Add(new Device { Name = "Raspberry Pi", Key = Guid.NewGuid(), Id = 1 });
+                    context.Location.Add(new Location { Name = "Home", Id = 3 });
+                    context.Sensor.Add(new Sensor { Name = "TSYS01", Id = 1 });
+
+                    int tempShift = 15;
+                    var numberOfTempReadingsPerDay = 24 * 60 * 60 / 15;
+                    for (int numberDaysBack = -40; numberDaysBack < 41; numberDaysBack++)
+                    {
+                        double tempVariancePerDay = new Random().NextDouble() * 20;
+                        var takenAt = DateTime.UtcNow.Date.AddDays(numberDaysBack);
+                        for (int i = 0; i < numberOfTempReadingsPerDay; i++)
+                        {
+                            var temperature =
+                                tempVariancePerDay *
+                                Math.Sin(2 * Math.PI * i / numberOfTempReadingsPerDay) +
+                                tempShift;
+                            var tempReading = new TempReading
+                            {
+                                DeviceId = 1,
+                                LocationId = 3,
+                                SensorId = 1,
+                                TakenAt = takenAt,
+                                Temperature = (decimal) Math.Round(temperature, 2)
+                            };
+                            context.TempReading.Add(tempReading);
+                            takenAt = takenAt.AddSeconds(15);
+                        }
+                    }
+
+                    context.SaveChanges();
+                    return;
+                }
+#endif
+
                 context.Database.Migrate();
 
                 if (context.Device.Any()) return;
@@ -140,7 +180,6 @@ namespace RoomTemp
                 Console.WriteLine(e);
                 throw;
             }
-           
         }
     }
 }
