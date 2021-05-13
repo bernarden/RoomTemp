@@ -12,6 +12,10 @@ namespace RoomTemp
 
         private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+#if DEBUG
+                // Make ui/api accessible by machine ip address.
+                .UseKestrel(x => x.ListenAnyIP(3000))
+#endif
                 .UseStartup<Startup>();
     }
 }
