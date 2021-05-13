@@ -5,6 +5,8 @@
 
 # Application-specific files
 temperature.db
+temperature.db-shm
+temperature.db-walm
 
 # User-specific files
 *.rsuser
