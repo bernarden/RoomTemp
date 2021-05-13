@@ -85,6 +85,7 @@ export class ChartConfig {
       pointHoverBorderColor: this.getColour(retrievalIndex, true),
       pointHoverBorderWidth: 2,
       pointRadius: 1,
+      tension: 0.5,
       pointHitRadius: 10,
       cubicInterpolationMode: "default"
     };
