@@ -91,7 +91,9 @@ class TemperatureChart extends React.Component<IProps, IState> {
   private createChart() {
     if (this.chart) {
       this.chart.data.datasets = [];
+      return;
     }
+
     const options = ChartConfig.getChartOptions(this.props.selectedRange);
     const ctx: HTMLCanvasElement = document.getElementById(
       "temperatureChart"
